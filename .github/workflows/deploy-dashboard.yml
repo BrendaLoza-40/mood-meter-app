@@ -25,13 +25,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: src-DashboardMT/package-lock.json
       
       - name: Install dependencies
         run: |
           cd src-DashboardMT
-          npm ci
+          npm install
       
       - name: Build dashboard
         run: |
