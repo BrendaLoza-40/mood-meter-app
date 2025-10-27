@@ -10,7 +10,6 @@ This project consists of three main components:
 2. **Teacher Dashboard** (`src-DashboardMT/`) - Data visualization and analysis dashboard
 3. **Backend API** (`server/`) - Node.js/Express server with file-based storage
 
-Original design: https://www.figma.com/design/k2vAj2okgD0IB8Y9uajSo9/Mood-Tracker-App
 
 ## 🎯 Features
 
