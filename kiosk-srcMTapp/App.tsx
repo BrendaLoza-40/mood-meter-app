@@ -121,6 +121,11 @@ function AppContent() {
     resetTimers();
   };
 
+  // Start timer when page changes (but not on welcome page)
+  useEffect(() => {
+    resetTimers();
+  }, [currentPage, resetTimers]);
+
   // Set up activity listeners
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
@@ -129,15 +134,13 @@ function AppContent() {
       document.addEventListener(event, handleUserActivity);
     });
 
-    resetTimers();
-
     return () => {
       events.forEach((event) => {
         document.removeEventListener(event, handleUserActivity);
       });
       clearTimers();
     };
-  }, [handleUserActivity, resetTimers, clearTimers]);
+  }, [handleUserActivity, clearTimers]);
 
   return (
     <>
