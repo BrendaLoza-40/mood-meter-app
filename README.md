@@ -6,8 +6,8 @@ An interactive React-based mood tracking application with a teacher dashboard fo
 
 This project consists of three main components:
 
-1. **Student App** (`srcMTapp/`) - Interactive mood meter interface for students
-2. **Teacher Dashboard** (`src-DashboardMT/`) - Data visualization and analysis dashboard
+1. **Student Kiosk App** (`kiosk-srcMTapp/`) - Interactive mood meter interface for students
+2. **Teacher Dashboard** (`dashboard-src-DashboardMT/`) - Data visualization and analysis dashboard
 3. **Backend API** (`server/`) - Node.js/Express server with file-based storage
 
 Original design: https://www.figma.com/design/k2vAj2okgD0IB8Y9uajSo9/Mood-Tracker-App
@@ -92,12 +92,12 @@ npm run dev:clean
 
 ```
 MoodMeter-Code/
-├── srcMTapp/              # Student-facing mood tracker app
+├── kiosk-srcMTapp/              # Student-facing mood tracker kiosk app
 │   ├── components/        # React components (pages, UI)
 │   ├── services/          # API client
 │   ├── styles/            # CSS and theme files
 │   └── vite.config.ts     # Vite configuration
-├── src-DashboardMT/       # Teacher dashboard
+├── dashboard-src-DashboardMT/       # Teacher dashboard
 │   ├── components/        # React components (charts, filters)
 │   ├── services/          # API client
 │   ├── types/             # TypeScript type definitions
@@ -198,8 +198,8 @@ The UI design is based on Figma mockups with:
 
 **Build all apps:**
 ```bash
-cd srcMTapp && npm run build
-cd ../src-DashboardMT && npm run build
+cd kiosk-srcMTapp && npm run build
+cd ../dashboard-src-DashboardMT && npm run build
 ```
 
 **Backend production:**

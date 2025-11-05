@@ -57,9 +57,9 @@
       "scripts": {
           "dev": "vite",
           "build": "vite build",
-          "dev:app": "cd srcMTapp && npm install && npm run dev",
-          "dev:dashboard": "cd src-DashboardMT && npm install && npm run dev",
+          "dev:kiosk": "cd kiosk-srcMTapp && npm install && npm run dev",
+          "dev:dashboard": "cd dashboard-figma-dashboard && npm install && npm run dev",
           "dev:server": "cd server && set PORT=4001&& npm install && npm run dev",
-          "dev:all": "concurrently -n server,app,dashboard -c green,cyan,magenta \"npm run dev:server\" \"cd srcMTapp && npm install && set VITE_API_BASE_URL=http://localhost:4001&& npm run dev\" \"cd src-DashboardMT && npm install && set VITE_API_BASE_URL=http://localhost:4001&& npm run dev\""
+          "dev:all": "concurrently -n server,kiosk,dashboard -c green,cyan,magenta \"npm run dev:server\" \"cd kiosk-srcMTapp && npm install && set VITE_API_BASE_URL=http://localhost:4001&& npm run dev\" \"cd dashboard-figma-dashboard && npm install && set VITE_API_BASE_URL=http://localhost:4001&& npm run dev\""
       }
   }

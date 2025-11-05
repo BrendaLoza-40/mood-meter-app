@@ -1,3 +1,6 @@
+// Load environment variables
+import 'dotenv/config';
+
 // Import required dependencies
 import express from 'express';
 import cors from 'cors';  // Enables cross-origin requests from frontend apps
@@ -24,6 +27,7 @@ app.get('/', (req, res) => {
 });
 
 // Start the server and listen on the specified port
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`Also accessible at http://localhost:${PORT}`);
 });
