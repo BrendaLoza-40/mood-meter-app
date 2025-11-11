@@ -11,15 +11,17 @@ import { CustomDateRange } from './components/CustomDateRange';
 import { ExportButtons } from './components/ExportButtons';
 import { DataComparison } from './components/DataComparison';
 import { L2EmotionBreakdown } from './components/L2EmotionBreakdown';
-import { 
-  generateMockData, 
-  generateMockDataForDateRange, 
+import {
+  generateMockData,
+  generateMockDataForDateRange,
   filterDataByDate,
-  aggregateMoodData, 
+  aggregateMoodData,
   aggregateL2Emotions,
-  getMoodStats 
+  getMoodStats,
+  // This is the shape ALL dashboard utils/components expect
+  type MoodEntry as DashboardMoodEntry,
 } from './utils/mockMoodData';
-import { fetchMoodEntries } from './services/api'; // Import API service
+import { fetchDashboardMoods } from './services/api';
 import { Moon, Sun } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -30,18 +32,18 @@ export default function App() {
   const [nightVision, setNightVision] = useState(false);
   const [searchDate, setSearchDate] = useState<Date | undefined>(undefined);
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
-  const [apiData, setApiData] = useState<any[]>([]); // Store real API data
+  const [apiData, setApiData] = useState<DashboardMoodEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [useRealData, setUseRealData] = useState(true); // Toggle between real and mock data
+  const [useRealData, setUseRealData] = useState(true); // toggle real vs mock
 
-  // Fetch real data from API on component mount
+  // Fetch normalized data from the server
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       try {
-        const entries = await fetchMoodEntries();
-        setApiData(entries);
-        console.log(`Loaded ${entries.length} entries from API`);
+        const fetched: DashboardMoodEntry[] = await fetchDashboardMoods();
+        setApiData(fetched);
+        console.log(`Loaded ${fetched.length} entries from API`);
       } catch (error) {
         console.error('Failed to load data from API:', error);
       } finally {
@@ -49,27 +51,25 @@ export default function App() {
       }
     }
     loadData();
-    
-    // Optionally refresh data every 30 seconds
+
+    // optional auto-refresh
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  // Dark mode toggle
   useEffect(() => {
-    if (nightVision) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const root = document.documentElement;
+    if (nightVision) root.classList.add('dark');
+    else root.classList.remove('dark');
   }, [nightVision]);
 
-  // Generate data based on active filters
-  // Use real API data if available, otherwise fall back to mock data
+  // Choose base dataset: real (normalized) or mock
   const rawMoodData = useMemo(() => {
-    if (useRealData && apiData.length > 0) {
-      return apiData; // Use real data from API
-    }
-    // Fall back to mock data for demo purposes
+    // If we intend to use real data, always return what we have (even if empty)
+    if (useRealData) return apiData;
+
+    // Only when you explicitly turn off real data, use mocks:
     if (customRange?.from && customRange?.to) {
       return generateMockDataForDateRange(customRange.from, customRange.to);
     }
@@ -77,10 +77,8 @@ export default function App() {
   }, [useRealData, apiData, period, customRange]);
 
   // Apply date search filter
-  const moodData = useMemo(() => {
-    if (searchDate) {
-      return filterDataByDate(rawMoodData, searchDate);
-    }
+  const moodData: DashboardMoodEntry[] = useMemo(() => {
+    if (searchDate) return filterDataByDate(rawMoodData, searchDate);
     return rawMoodData;
   }, [rawMoodData, searchDate]);
 
@@ -90,16 +88,12 @@ export default function App() {
 
   const handleDateSearch = (date: Date | undefined) => {
     setSearchDate(date);
-    if (date) {
-      setCustomRange(undefined); // Clear custom range when searching specific date
-    }
+    if (date) setCustomRange(undefined);
   };
 
   const handleCustomRange = (range: DateRange | undefined) => {
     setCustomRange(range);
-    if (range) {
-      setSearchDate(undefined); // Clear date search when using custom range
-    }
+    if (range) setSearchDate(undefined);
   };
 
   return (
@@ -112,14 +106,20 @@ export default function App() {
             <p className="text-muted-foreground mt-1">
               Track and analyze student emotional data with L1/L2 categorization
             </p>
+            {/* Live/Mock banner */}
+            <div className="text-xs text-muted-foreground mt-1">
+              Data source: {useRealData ? 'LIVE (server)' : 'MOCK'}
+              {useRealData && ` — ${apiData.length} rows`}
+              {isLoading && ' — loading...'}
+            </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <ExportButtons data={moodData} stats={stats} />
             <div className="flex items-center space-x-2">
               <Sun className="h-4 w-4 text-muted-foreground" />
-              <Switch 
-                id="night-vision" 
+              <Switch
+                id="night-vision"
                 checked={nightVision}
                 onCheckedChange={setNightVision}
               />
@@ -131,18 +131,12 @@ export default function App() {
 
         {/* Date Search and Custom Range */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <DateSearch 
-            onDateSelect={handleDateSearch}
-            selectedDate={searchDate}
-          />
-          <CustomDateRange 
-            onRangeSelect={handleCustomRange}
-            selectedRange={customRange}
-          />
+          <DateSearch onDateSelect={handleDateSearch} selectedDate={searchDate} />
+          <CustomDateRange onRangeSelect={handleCustomRange} selectedRange={customRange} />
         </div>
 
         {/* Time Period Tabs */}
-  <Tabs value={period} onValueChange={(value: string) => setPeriod(value as TimePeriod)}>
+        <Tabs value={period} onValueChange={(value: string) => setPeriod(value as TimePeriod)}>
           <TabsList className="grid w-full max-w-md grid-cols-4">
             <TabsTrigger value="day">Day</TabsTrigger>
             <TabsTrigger value="week">Week</TabsTrigger>
@@ -155,14 +149,17 @@ export default function App() {
             {(searchDate || customRange) && (
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <p className="text-sm">
-                  {searchDate && `Showing data for: ${searchDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
-                  {customRange?.from && customRange?.to && `Showing data from: ${customRange.from.toLocaleDateString()} to ${customRange.to.toLocaleDateString()}`}
+                  {searchDate && `Showing data for: ${searchDate.toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                  })}`}
+                  {customRange?.from && customRange?.to &&
+                    `Showing data from: ${customRange.from.toLocaleDateString()} to ${customRange.to.toLocaleDateString()}`}
                 </p>
               </div>
             )}
 
             {/* Stats Cards */}
-            <StatsCards 
+            <StatsCards
               total={stats.total}
               percentages={stats.percentages}
               averageIntensity={stats.averageIntensity}
@@ -189,22 +186,30 @@ export default function App() {
               <div className="bg-card border border-border rounded-lg p-6">
                 <h4 className="text-muted-foreground mb-2">Most Common L1</h4>
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ 
-                      backgroundColor: stats.percentages.high_energy_pleasant >= Math.max(...Object.values(stats.percentages)) 
-                        ? '#facc15' 
-                        : stats.percentages.low_energy_pleasant >= Math.max(...Object.values(stats.percentages))
-                        ? '#10b981'
-                        : stats.percentages.high_energy_unpleasant >= Math.max(...Object.values(stats.percentages))
-                        ? '#ef4444'
-                        : '#3b82f6'
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{
+                      backgroundColor:
+                        stats.percentages.high_energy_pleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#facc15'
+                          : stats.percentages.low_energy_pleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#10b981'
+                          : stats.percentages.high_energy_unpleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#ef4444'
+                          : '#3b82f6',
                     }}
-                  ></div>
+                  />
                   <p>
-                    {Object.entries(stats.percentages).reduce((a, b) => 
-                      stats.percentages[a[0] as keyof typeof stats.percentages] > stats.percentages[b[0] as keyof typeof stats.percentages] ? a : b
-                    )[0].split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    {Object.entries(stats.percentages)
+                      .reduce((a, b) =>
+                        stats.percentages[a[0] as keyof typeof stats.percentages] >
+                        stats.percentages[b[0] as keyof typeof stats.percentages]
+                          ? a
+                          : b
+                      )[0]
+                      .split('_')
+                      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join(' ')}
                   </p>
                 </div>
               </div>

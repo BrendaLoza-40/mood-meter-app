@@ -1,29 +1,30 @@
-// Import required dependencies
+// server/index.js
+import 'dotenv/config';// so PORT from .env works
 import express from 'express';
-import cors from 'cors';  // Enables cross-origin requests from frontend apps
-import bodyParser from 'body-parser';  // Parses JSON request bodies
-import moodsRouter from './routes/moods.js';  // Import mood data routes
+import cors from 'cors';
+import moodsRouter from './routes/moods.js';
 
-// Initialize Express application
 const app = express();
 
-// Set server port (use environment variable or default to 4000)
-const PORT = process.env.PORT || 4000;
+// Use PORT from .env, fall back to 4001 (your apps point here)
+const PORT = process.env.PORT || 4001;
 
-// Middleware setup
-app.use(cors());  // Allow requests from React apps running on different ports
-app.use(bodyParser.json());  // Parse incoming JSON payloads
+// Middleware
+app.use(cors());
+app.use(express.json());             // built-in JSON parser (no body-parser needed)
 
-// Mount the moods API routes at /api/moods
-// All mood-related endpoints will be prefixed with /api/moods
+// Health check (so /api/health doesn’t say "Cannot GET")
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
+// Your existing routes
 app.use('/api/moods', moodsRouter);
 
-// Root endpoint to verify server is running
-app.get('/', (req, res) => {
+// Root endpoint (kept from your file)
+app.get('/', (_req, res) => {
   res.send('Mood Meter API is running.');
 });
 
-// Start the server and listen on the specified port
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
