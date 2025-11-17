@@ -83,6 +83,8 @@ export function ThemePreferenceChart({ data }: ThemePreferenceChartProps) {
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
+                stroke="rgba(255, 255, 255, 0.5)"
+                strokeWidth={2}
               >
                 {themeStats.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

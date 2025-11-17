@@ -53,7 +53,7 @@
       outDir: 'build',
     },
     server: {
-      port: 3000,
+      port: 3001,
       host: '0.0.0.0', // Allow access from other devices on network
       open: true,
     },

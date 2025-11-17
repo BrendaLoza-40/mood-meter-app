@@ -8,6 +8,7 @@ export const dashboardTranslations = {
     
     // Navigation & Controls
     adminLogin: 'Admin Login',
+    adminActive: 'Admin Active',
     logout: 'Logout',
     settings: 'Settings',
     nightVision: 'Night Vision',
@@ -126,6 +127,7 @@ export const dashboardTranslations = {
     
     // Navigation & Controls
     adminLogin: 'Iniciar Sesión de Administrador',
+    adminActive: 'Admin Activo',
     logout: 'Cerrar Sesión',
     settings: 'Configuración',
     nightVision: 'Visión Nocturna',
@@ -243,6 +245,7 @@ export const dashboardTranslations = {
     
     // Navigation & Controls
     adminLogin: 'Вход Администратора',
+    adminActive: 'Админ Активен',
     logout: 'Выйти',
     settings: 'Настройки',
     nightVision: 'Ночное Видение',

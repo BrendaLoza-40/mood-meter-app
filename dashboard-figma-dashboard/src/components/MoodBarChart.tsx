@@ -21,15 +21,21 @@ export function MoodBarChart({ data }: MoodBarChartProps) {
   const ChartContent = ({ height }: { height: number }) => (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+        <CartesianGrid 
+          strokeDasharray="3 3" 
+          stroke="var(--border)" 
+          strokeOpacity={0.3}
+        />
         <XAxis 
           dataKey="date" 
           tick={{ fill: 'var(--foreground)' }}
           stroke="var(--foreground)"
+          strokeWidth={1.5}
         />
         <YAxis 
           tick={{ fill: 'var(--foreground)' }}
           stroke="var(--foreground)"
+          strokeWidth={1.5}
           label={{ 
             value: t('numberOfEntries'), 
             angle: -90, 
@@ -50,10 +56,34 @@ export function MoodBarChart({ data }: MoodBarChartProps) {
             color: 'var(--foreground)'
           }}
         />
-        <Bar dataKey="high_energy_pleasant" name={getTranslatedL1Label('high_energy_pleasant', language)} fill={L1_COLORS.high_energy_pleasant} />
-        <Bar dataKey="high_energy_unpleasant" name={getTranslatedL1Label('high_energy_unpleasant', language)} fill={L1_COLORS.high_energy_unpleasant} />
-        <Bar dataKey="low_energy_unpleasant" name={getTranslatedL1Label('low_energy_unpleasant', language)} fill={L1_COLORS.low_energy_unpleasant} />
-        <Bar dataKey="low_energy_pleasant" name={getTranslatedL1Label('low_energy_pleasant', language)} fill={L1_COLORS.low_energy_pleasant} />
+        <Bar 
+          dataKey="high_energy_pleasant" 
+          name={getTranslatedL1Label('high_energy_pleasant', language)} 
+          fill={L1_COLORS.high_energy_pleasant}
+          stroke="rgba(255, 255, 255, 0.5)"
+          strokeWidth={1}
+        />
+        <Bar 
+          dataKey="high_energy_unpleasant" 
+          name={getTranslatedL1Label('high_energy_unpleasant', language)} 
+          fill={L1_COLORS.high_energy_unpleasant}
+          stroke="rgba(255, 255, 255, 0.5)"
+          strokeWidth={1}
+        />
+        <Bar 
+          dataKey="low_energy_unpleasant" 
+          name={getTranslatedL1Label('low_energy_unpleasant', language)} 
+          fill={L1_COLORS.low_energy_unpleasant}
+          stroke="rgba(255, 255, 255, 0.5)"
+          strokeWidth={1}
+        />
+        <Bar 
+          dataKey="low_energy_pleasant" 
+          name={getTranslatedL1Label('low_energy_pleasant', language)} 
+          fill={L1_COLORS.low_energy_pleasant}
+          stroke="rgba(255, 255, 255, 0.5)"
+          strokeWidth={1}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

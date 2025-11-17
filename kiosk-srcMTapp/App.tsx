@@ -79,12 +79,7 @@ function AppContent() {
   const resetTimers = useCallback(() => {
     clearTimers();
     
-    // Don't set timers on welcome page
-    if (currentPage === "welcome") {
-      setShowWarning(false);
-      return;
-    }
-
+    // Start timers immediately on all pages
     // Show warning after 20 seconds
     warningTimer.current = setTimeout(() => {
       setShowWarning(true);
@@ -105,7 +100,7 @@ function AppContent() {
     inactivityTimer.current = setTimeout(() => {
       handleReset();
     }, INACTIVITY_TIMEOUT);
-  }, [currentPage, clearTimers, handleReset]);
+  }, [clearTimers, handleReset]);
 
   const handleUserActivity = useCallback(() => {
     if (showWarning) {
@@ -121,10 +116,10 @@ function AppContent() {
     resetTimers();
   };
 
-  // Start timer when page changes (but not on welcome page)
+  // Start timer immediately when component mounts or page changes
   useEffect(() => {
     resetTimers();
-  }, [currentPage, resetTimers]);
+  }, [resetTimers]);
 
   // Set up activity listeners
   useEffect(() => {

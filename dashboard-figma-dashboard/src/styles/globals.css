@@ -58,7 +58,7 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
+  --border: rgba(255, 255, 255, 0.3);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
   --font-weight-medium: 500;
@@ -74,7 +74,7 @@
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-border: rgba(255, 255, 255, 0.3);
   --sidebar-ring: oklch(0.439 0 0);
 }
 
@@ -186,4 +186,80 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* Enhanced visibility for dark mode - White outlines and borders */
+.dark [data-slot="card"] {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .recharts-wrapper {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+}
+
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark .recharts-cartesian-axis-line {
+  stroke: rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark .recharts-cartesian-axis-tick-line {
+  stroke: rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark .recharts-pie-sector,
+.dark .recharts-area,
+.dark .recharts-bar {
+  stroke: rgba(255, 255, 255, 0.5) !important;
+  stroke-width: 1px !important;
+}
+
+.dark button[variant="outline"] {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .border {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .bg-muted\/50 {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark input[type="text"],
+.dark input[type="password"],
+.dark input[type="email"],
+.dark input[type="url"],
+.dark textarea,
+.dark select {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .badge {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Enhanced table visibility in dark mode */
+.dark table {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark th,
+.dark td {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced dialog and modal visibility */
+.dark [role="dialog"],
+.dark [role="alertdialog"] {
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
