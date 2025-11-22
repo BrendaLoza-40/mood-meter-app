@@ -92,11 +92,13 @@ function AppContent() {
         setCountdown(currentCount);
         if (currentCount <= 0) {
           if (countdownInterval.current) clearInterval(countdownInterval.current);
+          // Trigger reset when countdown reaches 0
+          handleReset();
         }
       }, 1000);
     }, WARNING_TIMEOUT);
 
-    // Reset to welcome after 30 seconds
+    // Backup reset after 30 seconds (should be triggered by countdown, but keeping as failsafe)
     inactivityTimer.current = setTimeout(() => {
       handleReset();
     }, INACTIVITY_TIMEOUT);
