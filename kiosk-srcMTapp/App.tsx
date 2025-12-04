@@ -25,6 +25,7 @@ type Page = "welcome" | "mood-meter" | "sub-emotions" | "all-emotions" | "thank-
 const PROMPT_TIMEOUT = 10000; // Show prompt after 10 seconds
 const COUNTDOWN_SECONDS = 5; // Countdown duration once prompt appears
 const RESET_TIMEOUT = COUNTDOWN_SECONDS * 1000; // Reset once countdown completes
+const CLICK_DEBOUNCE_MS = 500; // Prevent rapid clicks - only process first click within this window
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("welcome");
@@ -42,28 +43,44 @@ function AppContent() {
   const promptTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
   const autoResetTimer = useRef<NodeJS.Timeout | null>(null);
+  const isProcessingClick = useRef<boolean>(false);
 
-  const handleGetStarted = () => {
+  // Debounce wrapper to prevent rapid clicks - handles functions with or without parameters
+  const withClickProtection = useCallback(<T extends (...args: any[]) => void>(fn: T): T => {
+    return ((...args: Parameters<T>) => {
+      if (isProcessingClick.current) {
+        return; // Ignore if already processing a click
+      }
+      isProcessingClick.current = true;
+      fn(...args);
+      // Reset after debounce period
+      setTimeout(() => {
+        isProcessingClick.current = false;
+      }, CLICK_DEBOUNCE_MS);
+    }) as T;
+  }, []);
+
+  const handleGetStarted = useCallback(() => {
     setCurrentPage("mood-meter");
-  };
+  }, []);
 
-  const handleSelectQuadrant = (quadrant: string) => {
+  const handleSelectQuadrant = useCallback((quadrant: string) => {
     setSelectedQuadrant(quadrant as QuadrantId);
     setCurrentPage("sub-emotions");
-  };
+  }, []);
 
-  const handleSelectEmotion = (emotion: string) => {
+  const handleSelectEmotion = useCallback((emotion: string) => {
     setSelectedEmotion(emotion);
     setCurrentPage("thank-you");
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setCurrentPage("mood-meter");
-  };
+  }, []);
 
-  const handleSeeAllEmotions = () => {
+  const handleSeeAllEmotions = useCallback(() => {
     setCurrentPage("all-emotions");
-  };
+  }, []);
 
   const clearTimers = useCallback(() => {
     if (promptTimer.current) {
@@ -172,35 +189,35 @@ function AppContent() {
   return (
     <>
       {currentPage === "welcome" && (
-        <WelcomePage onGetStarted={handleGetStarted} />
+        <WelcomePage onGetStarted={withClickProtection(handleGetStarted)} />
       )}
       
       {currentPage === "mood-meter" && (
         <MoodMeterPage 
-          onSelectQuadrant={handleSelectQuadrant}
-          onSeeAllEmotions={handleSeeAllEmotions}
+          onSelectQuadrant={withClickProtection(handleSelectQuadrant)}
+          onSeeAllEmotions={withClickProtection(handleSeeAllEmotions)}
         />
       )}
       
       {currentPage === "sub-emotions" && selectedQuadrant && (
         <SubEmotionsPage
           quadrant={selectedQuadrant}
-          onSelectEmotion={handleSelectEmotion}
-          onBack={handleBack}
+          onSelectEmotion={withClickProtection(handleSelectEmotion)}
+          onBack={withClickProtection(handleBack)}
         />
       )}
       
       {currentPage === "all-emotions" && (
         <AllEmotionsPage
-          onSelectEmotion={handleSelectEmotion}
-          onBack={handleBack}
+          onSelectEmotion={withClickProtection(handleSelectEmotion)}
+          onBack={withClickProtection(handleBack)}
         />
       )}
       
       {currentPage === "thank-you" && (
         <ThankYouPage
           selectedEmotion={selectedEmotion}
-          onReset={handleReset}
+          onReset={withClickProtection(handleReset)}
         />
       )}
 
