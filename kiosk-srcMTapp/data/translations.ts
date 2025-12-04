@@ -67,8 +67,8 @@ export const translations = {
     
     // Inactivity warning
     areYouStillThere: 'Are you still there?',
-    returnToHome: "You'll be returned to the home screen in",
-    seconds: 'seconds',
+    stayActiveInstruction: 'Tap the screen to stay on this page.',
+    secondsRemaining: 'seconds remaining',
     stillHere: "I'm still here!",
   },
   es: {
@@ -137,8 +137,8 @@ export const translations = {
     
     // Inactivity warning
     areYouStillThere: '¿Sigues ahí?',
-    returnToHome: 'Volverás a la pantalla de inicio en',
-    seconds: 'segundos',
+    stayActiveInstruction: 'Toca la pantalla para permanecer en esta página.',
+    secondsRemaining: 'segundos restantes',
     stillHere: '¡Todavía estoy aquí!',
   },
   ru: {
@@ -207,8 +207,8 @@ export const translations = {
     
     // Inactivity warning
     areYouStillThere: 'Вы ещё здесь?',
-    returnToHome: 'Вы вернётесь на главный экран через',
-    seconds: 'секунд',
+    stayActiveInstruction: 'Пожалуйста, коснитесь экрана, чтобы остаться на этой странице.',
+    secondsRemaining: 'секунд осталось',
     stillHere: 'Я всё ещё здесь!',
   },
 };

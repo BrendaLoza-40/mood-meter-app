@@ -21,15 +21,17 @@ import { motion, AnimatePresence } from "motion/react";
 
 type Page = "welcome" | "mood-meter" | "sub-emotions" | "all-emotions" | "thank-you";
 
-const INACTIVITY_TIMEOUT = 30000; // 30 seconds
-const WARNING_TIMEOUT = 20000; // 20 seconds (10 seconds before reset)
+// Inactivity timings (adjust here for different durations)
+const PROMPT_TIMEOUT = 10000; // Show prompt after 10 seconds
+const COUNTDOWN_SECONDS = 5; // Countdown duration once prompt appears
+const RESET_TIMEOUT = COUNTDOWN_SECONDS * 1000; // Reset once countdown completes
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("welcome");
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId | null>(null);
   const [selectedEmotion, setSelectedEmotion] = useState<string>("");
   const [showWarning, setShowWarning] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   
   const { getThemeColors } = useTheme();
   const { language } = useLanguage();
@@ -37,8 +39,9 @@ function AppContent() {
   const colors = getThemeColors();
   
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
-  const warningTimer = useRef<NodeJS.Timeout | null>(null);
+  const promptTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
+  const autoResetTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleGetStarted = () => {
     setCurrentPage("mood-meter");
@@ -62,64 +65,88 @@ function AppContent() {
     setCurrentPage("all-emotions");
   };
 
+  const clearTimers = useCallback(() => {
+    if (promptTimer.current) {
+      clearTimeout(promptTimer.current);
+      promptTimer.current = null;
+    }
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = null;
+    }
+    if (countdownInterval.current) {
+      clearInterval(countdownInterval.current);
+      countdownInterval.current = null;
+    }
+    if (autoResetTimer.current) {
+      clearTimeout(autoResetTimer.current);
+      autoResetTimer.current = null;
+    }
+  }, []);
+
   const handleReset = useCallback(() => {
+    clearTimers();
     setSelectedQuadrant(null);
     setSelectedEmotion("");
     setCurrentPage("welcome");
     setShowWarning(false);
-    setCountdown(10);
-  }, []);
-
-  const clearTimers = useCallback(() => {
-    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-    if (warningTimer.current) clearTimeout(warningTimer.current);
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
-  }, []);
+    setCountdown(COUNTDOWN_SECONDS);
+  }, [clearTimers]);
 
   const resetTimers = useCallback(() => {
     clearTimers();
     
-    // Don't set timers on welcome page
-    if (currentPage === "welcome") {
+    // Skip timers on welcome page and during emotion selection
+    const shouldTrack =
+      currentPage === "mood-meter" ||
+      currentPage === "sub-emotions" ||
+      currentPage === "all-emotions";
+
+    if (!shouldTrack) {
       setShowWarning(false);
       return;
     }
 
-    // Show warning after 20 seconds
-    warningTimer.current = setTimeout(() => {
+    // Show prompt after inactivity threshold
+    promptTimer.current = setTimeout(() => {
       setShowWarning(true);
-      setCountdown(10);
-      
-      // Start countdown immediately and then continue every second
-      let currentCount = 10;
-      countdownInterval.current = setInterval(() => {
-        currentCount--;
-        setCountdown(currentCount);
-        if (currentCount <= 0) {
-          if (countdownInterval.current) clearInterval(countdownInterval.current);
-        }
-      }, 1000);
-    }, WARNING_TIMEOUT);
+      setCountdown(COUNTDOWN_SECONDS);
 
-    // Reset to welcome after 30 seconds
+      countdownInterval.current = setInterval(() => {
+        setCountdown((prev) => Math.max(prev - 1, 0));
+      }, 1000);
+
+      autoResetTimer.current = setTimeout(() => {
+        handleReset();
+      }, RESET_TIMEOUT);
+    }, PROMPT_TIMEOUT);
+
+    // Safety reset in case anything else goes wrong (prompt + countdown duration + grace)
     inactivityTimer.current = setTimeout(() => {
       handleReset();
-    }, INACTIVITY_TIMEOUT);
+    }, PROMPT_TIMEOUT + RESET_TIMEOUT + 1000);
   }, [currentPage, clearTimers, handleReset]);
 
   const handleUserActivity = useCallback(() => {
     if (showWarning) {
       setShowWarning(false);
-      setCountdown(10);
+      setCountdown(COUNTDOWN_SECONDS);
     }
     resetTimers();
   }, [showWarning, resetTimers]);
 
   const handleStayActive = () => {
     setShowWarning(false);
-    setCountdown(10);
+    setCountdown(COUNTDOWN_SECONDS);
     resetTimers();
   };
+
+  // Auto-reset when countdown finishes while warning is visible
+  useEffect(() => {
+    if (showWarning && countdown <= 0) {
+      handleReset();
+    }
+  }, [showWarning, countdown, handleReset]);
 
   // Start timer when page changes (but not on welcome page)
   useEffect(() => {
@@ -128,7 +155,7 @@ function AppContent() {
 
   // Set up activity listeners
   useEffect(() => {
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'pointerdown', 'pointermove', 'click'];
     
     events.forEach((event) => {
       document.addEventListener(event, handleUserActivity);
@@ -194,7 +221,7 @@ function AppContent() {
               <span>{t.areYouStillThere}</span>
             </AlertDialogTitle>
             <AlertDialogDescription className={`${colors.text} opacity-80 text-center pt-4`}>
-              {t.returnToHome}
+              {t.stayActiveInstruction}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={countdown}
@@ -206,7 +233,7 @@ function AppContent() {
                   {countdown}
                 </motion.div>
               </AnimatePresence>
-              {t.seconds}
+              {t.secondsRemaining}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex justify-center sm:justify-center">

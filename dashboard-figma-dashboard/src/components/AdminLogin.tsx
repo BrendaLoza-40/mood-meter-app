@@ -12,10 +12,17 @@ interface AdminLoginProps {
   onLoginSuccess: () => void;
 }
 
-// Default admin credentials (in a real app, this would be handled by a backend)
+/**
+ * ADMIN SETTINGS LOGIN CREDENTIALS
+ * 
+ * Location: dashboard-figma-dashboard/src/components/AdminLogin.tsx
+ * Lines: 15-18
+ * 
+ * To change credentials, update the values below:
+ */
 const DEFAULT_ADMIN = {
-  username: 'admin',
-  password: 'admin123'
+  username: 'Brandonisawesoeme',
+  password: 'Brandonisthebest67!'
 };
 
 export function AdminLogin({ open, onOpenChange, onLoginSuccess }: AdminLoginProps) {

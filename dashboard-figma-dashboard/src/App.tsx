@@ -14,6 +14,7 @@ import { DataComparison } from './components/DataComparison';
 import { L2EmotionBreakdown } from './components/L2EmotionBreakdown';
 import { AdminSettings } from './components/AdminSettings';
 import { AdminLogin } from './components/AdminLogin';
+import { DashboardLogin } from './components/DashboardLogin';
 import { DashboardSettings } from './components/DashboardSettings';
 import { ThemePreferenceChart } from './components/ThemePreferenceChart';
 import { LocationStats } from './components/LocationStats';
@@ -43,6 +44,7 @@ function DashboardContent() {
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const { language, setLanguage } = useLanguage();
   const t = useTranslation(language);
@@ -116,6 +118,20 @@ function DashboardContent() {
     setIsAdminAuthenticated(true);
     setShowLoginDialog(false);
   };
+
+  const handleDashboardLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toaster />
+        <DashboardLogin onLoginSuccess={handleDashboardLogin} />
+      </>
+    );
+  }
 
   return (
     <>

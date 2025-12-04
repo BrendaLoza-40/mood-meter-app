@@ -1,6 +1,8 @@
 // Import required dependencies
 import express from 'express';
-import { getAllMoods, insertMood, clearAllMoods, getMoodsByDateRange, getMoodStats } from '../database.js';
+// Currently using SQLite. To switch to Supabase, change this import to '../supabase-database.js'
+// this is sql lite version -> import { getAllMoods, insertMood, clearAllMoods, getMoodsByDateRange, getMoodStats } from '../database.js';
+import { getAllMoods, insertMood, clearAllMoods, getMoodsByDateRange, getMoodStats } from '../supabase-database.js';
 
 // Create Express router for mood-related endpoints
 const router = express.Router();
