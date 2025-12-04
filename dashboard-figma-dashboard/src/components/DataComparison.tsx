@@ -15,7 +15,7 @@ interface DataComparisonProps {
   data: MoodEntry[];
 }
 
-type ComparisonMetric = 'category_vs_time' | 'category_vs_response_time' | 'intensity_vs_response_time' | 'mood_vs_api_correlation';
+type ComparisonMetric = 'category_vs_response_time' | 'mood_vs_api_correlation';
 
 export function DataComparison({ data }: DataComparisonProps) {
   const [metric, setMetric] = useState<ComparisonMetric>('category_vs_response_time');
@@ -65,38 +65,7 @@ export function DataComparison({ data }: DataComparisonProps) {
     }));
   };
 
-  const getIntensityVsResponseTimeData = () => {
-    return data.map(entry => ({
-      intensity: entry.intensity,
-      responseTime: entry.responseTime / 1000,
-      category: entry.l1Category,
-      fill: L1_COLORS[entry.l1Category]
-    }));
-  };
 
-  const getCategoryByHourData = () => {
-    const hourData: Record<number, Record<L1Category, number>> = {};
-
-    data.forEach(entry => {
-      const hour = new Date(entry.timestamp).getHours();
-      if (!hourData[hour]) {
-        hourData[hour] = {
-          high_energy_pleasant: 0,
-          high_energy_unpleasant: 0,
-          low_energy_unpleasant: 0,
-          low_energy_pleasant: 0
-        };
-      }
-      hourData[hour][entry.l1Category]++;
-    });
-
-    return Object.entries(hourData)
-      .sort(([a], [b]) => parseInt(a) - parseInt(b))
-      .map(([hour, counts]) => ({
-        hour: `${hour}:00`,
-        ...counts
-      }));
-  };
 
   // Get correlation data between mood and APIs
   const getMoodVsAPICorrelationData = () => {
@@ -203,8 +172,6 @@ export function DataComparison({ data }: DataComparisonProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="category_vs_response_time">{t('categoryVsResponseTime')}</SelectItem>
-            <SelectItem value="category_vs_time">{t('categoryDistributionByHour')}</SelectItem>
-            <SelectItem value="intensity_vs_response_time">{t('intensityVsResponseTime')}</SelectItem>
             <SelectItem value="mood_vs_api_correlation">Mood vs API Correlation</SelectItem>
           </SelectContent>
         </Select>
@@ -261,78 +228,6 @@ export function DataComparison({ data }: DataComparisonProps) {
               ))}
             </Bar>
           </BarChart>
-        ) : metric === 'category_vs_time' ? (
-          <BarChart data={getCategoryByHourData()}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis 
-              dataKey="hour" 
-              tick={{ fill: 'var(--foreground)' }}
-              stroke="var(--foreground)"
-            />
-            <YAxis 
-              tick={{ fill: 'var(--foreground)' }}
-              stroke="var(--foreground)"
-              label={{ 
-                value: t('numberOfEntries'), 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { textAnchor: 'middle', fill: 'var(--foreground)' }
-              }}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'var(--card)', 
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-                color: 'var(--foreground)'
-              }}
-            />
-            <Legend 
-              wrapperStyle={{ 
-                color: 'var(--foreground)'
-              }}
-            />
-            <Bar dataKey="high_energy_pleasant" name={getTranslatedL1Label('high_energy_pleasant', language)} fill={L1_COLORS.high_energy_pleasant} stackId="a" />
-            <Bar dataKey="high_energy_unpleasant" name={getTranslatedL1Label('high_energy_unpleasant', language)} fill={L1_COLORS.high_energy_unpleasant} stackId="a" />
-            <Bar dataKey="low_energy_unpleasant" name={getTranslatedL1Label('low_energy_unpleasant', language)} fill={L1_COLORS.low_energy_unpleasant} stackId="a" />
-            <Bar dataKey="low_energy_pleasant" name={getTranslatedL1Label('low_energy_pleasant', language)} fill={L1_COLORS.low_energy_pleasant} stackId="a" />
-          </BarChart>
-        ) : metric === 'intensity_vs_response_time' ? (
-          <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis 
-              dataKey="intensity" 
-              name="Intensity" 
-              type="number" 
-              domain={[0, 10]}
-              label={{ value: 'Emotion Intensity', position: 'insideBottom', offset: -5, fill: 'var(--foreground)' }}
-              tick={{ fill: 'var(--foreground)' }}
-              stroke="var(--foreground)"
-            />
-            <YAxis 
-              dataKey="responseTime" 
-              name="Response Time"
-              label={{ 
-                value: t('responseTime'), 
-                angle: -90, 
-                position: 'insideLeft', 
-                style: { textAnchor: 'middle', fill: 'var(--foreground)' }
-              }}
-              tick={{ fill: 'var(--foreground)' }}
-              stroke="var(--foreground)"
-            />
-            <ZAxis type="number" dataKey="z" range={[64, 144]} />
-            <Tooltip 
-              cursor={{ strokeDasharray: '3 3' }}
-              contentStyle={{ 
-                backgroundColor: 'var(--card)', 
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-                color: 'var(--foreground)'
-              }}
-            />
-            <Scatter dataKey="responseTime" data={getIntensityVsResponseTimeData()} fill="#8884d8" />
-          </ScatterChart>
         ) : metric === 'mood_vs_api_correlation' ? (
           <LineChart data={getTimeSeriesCorrelationData()}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -387,12 +282,7 @@ export function DataComparison({ data }: DataComparisonProps) {
           {metric === 'category_vs_response_time' && 
             'This chart shows the correlation between emotion categories and the time students take to select their mood. Longer response times may indicate more complex emotional states.'
           }
-          {metric === 'category_vs_time' && 
-            'This chart displays how mood categories are distributed throughout the school day. Patterns may reveal optimal times for learning or when students need support.'
-          }
-          {metric === 'intensity_vs_response_time' && 
-            'This scatter plot explores the relationship between emotion intensity and response time. Each point represents a mood entry, colored by L1 category.'
-          }
+
           {metric === 'mood_vs_api_correlation' && 
             'This chart correlates mood data with external API data sources configured in admin settings. Correlation strength indicates how closely mood patterns align with external data.'
           }

@@ -30,7 +30,7 @@ import { filterByLocation } from './utils/filterUtils';
 import { useTranslation, LanguageType } from './utils/dashboardTranslations';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { getTranslatedL1Label, getTranslatedL2Label } from './utils/emotionCategories';
-import { Moon, Sun, Settings } from 'lucide-react';
+import { Moon, Sun, Settings, LogOut } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { Toaster } from './components/ui/sonner';
 
@@ -159,10 +159,20 @@ function DashboardContent() {
                 {t('adminLogin')}
               </Button>
             ) : (
-              <AdminSettings 
-                isAuthenticated={isAdminAuthenticated}
-                onLogout={handleLogout}
-              />
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-lg border border-green-300 dark:border-green-700">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">{t('adminActive')}</span>
+                </div>
+                <AdminSettings 
+                  isAuthenticated={isAdminAuthenticated}
+                  onLogout={handleLogout}
+                />
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {t('logout')}
+                </Button>
+              </div>
             )}
             <DashboardSettings 
               onLanguageChange={handleLanguageChange}

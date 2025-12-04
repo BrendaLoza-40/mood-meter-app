@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
-import { Settings, Plus, Trash2, Save, Languages, MapPin, Code2, Heart, LogOut } from 'lucide-react';
+import { Settings, Plus, Trash2, Save, Languages, MapPin, Code2, Heart, LogOut, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppConfig, Language, Location, APIConfiguration, CustomEmotion, loadConfig, saveConfig, CORRELATION_METRICS, API_TEMPLATES } from '../utils/appConfig';
+import { CSVUploadManager } from './CSVUploadManager';
 
 type L1Category = 'high_energy_pleasant' | 'high_energy_unpleasant' | 'low_energy_unpleasant' | 'low_energy_pleasant';
 
@@ -283,7 +284,7 @@ export function AdminSettings({ isAuthenticated, onLogout }: AdminSettingsProps)
         </DialogHeader>
 
         <Tabs defaultValue="emotions" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="emotions">
               <Heart className="h-4 w-4 mr-2" />
               Emotions
@@ -299,6 +300,10 @@ export function AdminSettings({ isAuthenticated, onLogout }: AdminSettingsProps)
             <TabsTrigger value="apis">
               <Code2 className="h-4 w-4 mr-2" />
               APIs
+            </TabsTrigger>
+            <TabsTrigger value="csv-data">
+              <Upload className="h-4 w-4 mr-2" />
+              CSV Data
             </TabsTrigger>
           </TabsList>
 
@@ -711,6 +716,57 @@ export function AdminSettings({ isAuthenticated, onLogout }: AdminSettingsProps)
                     </div>
                   ))
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* CSV Data Management Tab */}
+          <TabsContent value="csv-data" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>CSV Data Import & Management</CardTitle>
+                <CardDescription>
+                  Upload CSV files to include their data in correlation analysis. 
+                  This allows you to compare mood data with external data sources like academic scores, 
+                  weather data, attendance records, or any other time-series data.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Import CSV Data</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Upload CSV files containing time-series data for correlation analysis with mood entries.
+                    </p>
+                    <CSVUploadManager 
+                      onDataImported={(data) => {
+                        toast.success(`Successfully imported ${data.rowCount} data points from ${data.name}`);
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Data Usage in Correlations</h4>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>• Imported CSV data will automatically appear in the Data Comparison tab</p>
+                      <p>• The system matches timestamps to find correlations with mood entries</p>
+                      <p>• Supported data types: Academic scores, weather data, attendance, social events</p>
+                      <p>• CSV files should include 'timestamp' and 'value' columns at minimum</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Recommended CSV Format</h4>
+                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                      <pre className="text-xs">
+{`timestamp,value,category,label
+2024-01-01T10:00:00Z,75,academic,Math Test Score  
+2024-01-01T11:00:00Z,68,academic,English Quiz
+2024-01-01T14:00:00Z,15,weather,Temperature (°C)`}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

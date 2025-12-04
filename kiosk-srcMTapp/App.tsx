@@ -168,7 +168,7 @@ function AppContent() {
   // Start timer when page changes (but not on welcome page)
   useEffect(() => {
     resetTimers();
-  }, [currentPage, resetTimers]);
+  }, [resetTimers]);
 
   // Set up activity listeners
   useEffect(() => {

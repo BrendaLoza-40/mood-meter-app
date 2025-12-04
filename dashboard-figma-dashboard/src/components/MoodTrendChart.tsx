@@ -96,15 +96,21 @@ export function MoodTrendChart({ data }: MoodTrendChartProps) {
       </div>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            stroke="var(--muted-foreground)" 
+            strokeOpacity={0.3}
+          />
           <XAxis 
             dataKey="date" 
             tick={{ fill: 'var(--foreground)' }}
             stroke="var(--foreground)"
+            strokeWidth={1.5}
           />
           <YAxis 
             tick={{ fill: 'var(--foreground)' }}
             stroke="var(--foreground)"
+            strokeWidth={1.5}
             label={{ 
               value: t('numberOfEntries'), 
               angle: -90, 
@@ -140,7 +146,8 @@ export function MoodTrendChart({ data }: MoodTrendChartProps) {
                     ? 0.8 
                     : 0.2
               }
-              strokeWidth={highlightedCategories.has('high_energy_pleasant') ? 3 : 1}
+              strokeWidth={highlightedCategories.has('high_energy_pleasant') ? 3 : 2}
+              strokeOpacity={0.8}
             />
           )}
           {!hiddenCategories.has('high_energy_unpleasant') && (
@@ -158,7 +165,8 @@ export function MoodTrendChart({ data }: MoodTrendChartProps) {
                     ? 0.8 
                     : 0.2
               }
-              strokeWidth={highlightedCategories.has('high_energy_unpleasant') ? 3 : 1}
+              strokeWidth={highlightedCategories.has('high_energy_unpleasant') ? 3 : 2}
+              strokeOpacity={0.8}
             />
           )}
           {!hiddenCategories.has('low_energy_unpleasant') && (
@@ -176,7 +184,8 @@ export function MoodTrendChart({ data }: MoodTrendChartProps) {
                     ? 0.8 
                     : 0.2
               }
-              strokeWidth={highlightedCategories.has('low_energy_unpleasant') ? 3 : 1}
+              strokeWidth={highlightedCategories.has('low_energy_unpleasant') ? 3 : 2}
+              strokeOpacity={0.8}
             />
           )}
           {!hiddenCategories.has('low_energy_pleasant') && (
@@ -194,7 +203,8 @@ export function MoodTrendChart({ data }: MoodTrendChartProps) {
                     ? 0.8 
                     : 0.2
               }
-              strokeWidth={highlightedCategories.has('low_energy_pleasant') ? 3 : 1}
+              strokeWidth={highlightedCategories.has('low_energy_pleasant') ? 3 : 2}
+              strokeOpacity={0.8}
             />
           )}
         </AreaChart>

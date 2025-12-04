@@ -33,6 +33,8 @@ export function MoodDistributionChart({ l1Counts }: MoodDistributionChartProps) 
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
+            stroke="rgba(255, 255, 255, 0.5)"
+            strokeWidth={2}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={L1_COLORS[entry.category]} />
