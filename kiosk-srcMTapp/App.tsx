@@ -129,10 +129,7 @@ function AppContent() {
       setShowWarning(true);
       setCountdown(COUNTDOWN_SECONDS);
 
-      countdownInterval.current = setInterval(() => {
-        setCountdown((prev) => Math.max(prev - 1, 0));
-      }, 1000);
-
+      // Failsafe reset in case countdown doesn't fire
       autoResetTimer.current = setTimeout(() => {
         handleReset();
       }, RESET_TIMEOUT);
@@ -157,6 +154,33 @@ function AppContent() {
     setCountdown(COUNTDOWN_SECONDS);
     resetTimers();
   };
+
+  // Drive the countdown while the warning is visible
+  useEffect(() => {
+    if (!showWarning) return;
+
+    countdownInterval.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (countdownInterval.current) {
+            clearInterval(countdownInterval.current);
+            countdownInterval.current = null;
+          }
+          setShowWarning(false);
+          handleReset();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+        countdownInterval.current = null;
+      }
+    };
+  }, [showWarning, handleReset]);
 
   // Auto-reset when countdown finishes while warning is visible
   useEffect(() => {
