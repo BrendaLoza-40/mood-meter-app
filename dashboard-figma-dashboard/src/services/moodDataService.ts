@@ -40,9 +40,9 @@ export class MoodDataService {
         console.log('Fetching mood data from Supabase');
         
         let query = supabase
-          .from('mood_entries')
+          .from('moods')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('client_timestamp', { ascending: false });
 
         if (startDate) {
           query = query.gte('date_only', startDate);
@@ -111,9 +111,9 @@ export class MoodDataService {
         console.log('Fetching mood stats from Supabase');
         
         const { data, error } = await supabase
-          .from('mood_entries')
+          .from('moods')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('client_timestamp', { ascending: false });
 
         if (error) {
           console.error('Supabase stats error:', error);
@@ -181,9 +181,9 @@ export class MoodDataService {
         console.log('Clearing all mood entries from Supabase');
         
         const { error } = await supabase
-          .from('mood_entries')
+          .from('moods')
           .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all entries
+          .neq('id', 0); // Delete all entries
 
         if (error) {
           console.error('Supabase delete error:', error);

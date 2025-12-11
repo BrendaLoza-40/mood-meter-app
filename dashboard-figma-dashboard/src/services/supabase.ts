@@ -8,21 +8,19 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Types for dashboard
+// This shape matches the backend Supabase table `moods`
 export interface DashboardMoodEntry {
   id: string
-  created_at: string
+  created_at: string | null
+  client_timestamp?: string | null
   date_only: string
   l1_id: string
   l1_label: string
   l2_id: string
   l2_label: string
-  l3_id: string
-  l3_label: string
-  l4_id: string
-  l4_label: string
-  user_id?: string
-  session_id?: string
-  additional_notes?: string
+  time_to_select_ms?: number | null
+  kiosk_id?: string | null
+  user_id?: string | null
 }
 
 export default supabase
