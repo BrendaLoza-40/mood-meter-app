@@ -1,3 +1,45 @@
 node_modules
 dist
 .env
+<<<<<<< HEAD
+=======
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+.cache/
+temp/
+
+# Data files (optional - uncomment if you don't want to track mood data)
+# server/data/moods.json
+
+server/.env
+src-DashboardMT/.env
+srcMTapp/.env
+>>>>>>> 74d17279f63b48d08bed459a8caf08f582ab6fcc

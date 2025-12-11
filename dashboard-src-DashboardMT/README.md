@@ -1,7 +1,7 @@
 
   # Mood Meter Dashboard
 
-  This is a code bundle for Mood Meter Dashboard. The original project is available at https://www.figma.com/design/DAKRJOUEN54M6owsCEpfUf/Mood-Meter-Dashboard.
+  This is a code bundle for Mood Meter Dashboard. 
 
   ## Running the code
 

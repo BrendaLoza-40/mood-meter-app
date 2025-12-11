@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
 import { Switch } from './components/ui/switch';
 import { Label } from './components/ui/label';
-import { Button } from './components/ui/button';
 import { StatsCards } from './components/StatsCards';
 import { MoodDistributionChart } from './components/MoodDistributionChart';
 import { MoodTrendChart } from './components/MoodTrendChart';
@@ -12,23 +11,20 @@ import { CustomDateRange } from './components/CustomDateRange';
 import { ExportButtons } from './components/ExportButtons';
 import { DataComparison } from './components/DataComparison';
 import { L2EmotionBreakdown } from './components/L2EmotionBreakdown';
-import { AdminSettings } from './components/AdminSettings';
-import { AdminLogin } from './components/AdminLogin';
-import { DashboardSettings } from './components/DashboardSettings';
-import { ThemePreferenceChart } from './components/ThemePreferenceChart';
-import { LocationStats } from './components/LocationStats';
-import { 
-  generateMockData, 
-  generateMockDataForDateRange, 
+import {
+  generateMockData,
+  generateMockDataForDateRange,
   filterDataByDate,
-  aggregateMoodData, 
+  aggregateMoodData,
   aggregateL2Emotions,
-  getMoodStats 
+  getMoodStats,
+  // This is the shape ALL dashboard utils/components expect
+  type MoodEntry as DashboardMoodEntry,
 } from './utils/mockMoodData';
-import { filterByLocation } from './utils/filterUtils';
-import { Moon, Sun, Settings } from 'lucide-react';
+import { fetchDashboardMoods } from './services/api';
+import { subscribeToMoodsRealtime } from './services/realtime';
+import { Moon, Sun } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-import { Toaster } from './components/ui/sonner';
 
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
@@ -37,41 +33,82 @@ export default function App() {
   const [nightVision, setNightVision] = useState(false);
   const [searchDate, setSearchDate] = useState<Date | undefined>(undefined);
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
-  const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [apiData, setApiData] = useState<DashboardMoodEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [useRealData, setUseRealData] = useState(true); // toggle real vs mock
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
+  // Use Realtime subscription for live updates (when using real data)
   useEffect(() => {
-    if (nightVision) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    if (!useRealData) {
+      setIsLoading(false);
+      return;
     }
+
+    setIsLoading(true);
+
+    // Subscribe to realtime updates
+    const unsubscribe = subscribeToMoodsRealtime(
+      // On new entry
+      (newEntry, allEntries) => {
+        console.log(`🆕 New mood entry: ${newEntry.l2Emotion} (Total: ${allEntries.length})`);
+        setApiData(allEntries);
+        setIsLoading(false);
+        setRealtimeConnected(true);
+      },
+      // On full update
+      (allEntries) => {
+        setApiData(allEntries);
+        setIsLoading(false);
+        setRealtimeConnected(true);
+      }
+    );
+
+    // Fallback: if realtime fails, fall back to polling
+    const fallbackInterval = setTimeout(async () => {
+      if (apiData.length === 0) {
+        console.log('⚠️ Realtime not connected, falling back to API polling');
+        try {
+          const fetched = await fetchDashboardMoods();
+          setApiData(fetched);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to load data from API:', error);
+          setIsLoading(false);
+        }
+      }
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(fallbackInterval);
+    };
+  }, [useRealData]);
+
+  // Dark mode toggle
+  useEffect(() => {
+    const root = document.documentElement;
+    if (nightVision) root.classList.add('dark');
+    else root.classList.remove('dark');
   }, [nightVision]);
 
-  // Generate data based on active filters
+  // Choose base dataset: real (normalized) or mock
   const rawMoodData = useMemo(() => {
+    // If we intend to use real data, always return what we have (even if empty)
+    if (useRealData) return apiData;
+
+    // Only when you explicitly turn off real data, use mocks:
     if (customRange?.from && customRange?.to) {
       return generateMockDataForDateRange(customRange.from, customRange.to);
     }
     return generateMockData(period);
-  }, [period, customRange]);
+  }, [useRealData, apiData, period, customRange]);
 
-  // Apply date search filter and location filter
-  const moodData = useMemo(() => {
-    let filtered = rawMoodData;
-    
-    // Apply date filter
-    if (searchDate) {
-      filtered = filterDataByDate(filtered, searchDate);
-    }
-    
-    // Apply location filter
-    filtered = filterByLocation(filtered, selectedLocation);
-    
-    return filtered;
-  }, [rawMoodData, searchDate, selectedLocation]);
+  // Apply date search filter
+  const moodData: DashboardMoodEntry[] = useMemo(() => {
+    if (searchDate) return filterDataByDate(rawMoodData, searchDate);
+    return rawMoodData;
+  }, [rawMoodData, searchDate]);
 
   const aggregatedData = useMemo(() => aggregateMoodData(moodData, period), [moodData, period]);
   const l2Data = useMemo(() => aggregateL2Emotions(moodData), [moodData]);
@@ -79,72 +116,46 @@ export default function App() {
 
   const handleDateSearch = (date: Date | undefined) => {
     setSearchDate(date);
-    if (date) {
-      setCustomRange(undefined); // Clear custom range when searching specific date
-    }
+    if (date) setCustomRange(undefined);
   };
 
   const handleCustomRange = (range: DateRange | undefined) => {
     setCustomRange(range);
-    if (range) {
-      setSearchDate(undefined); // Clear date search when using custom range
-    }
-  };
-
-  const handleAdminClick = () => {
-    if (!isAdminAuthenticated) {
-      setShowLoginDialog(true);
-    }
-  };
-
-  const handleLoginSuccess = () => {
-    setIsAdminAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    setIsAdminAuthenticated(false);
+    if (range) setSearchDate(undefined);
   };
 
   return (
-    <>
-      <Toaster />
-      <AdminLogin 
-        open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
-        onLoginSuccess={handleLoginSuccess}
-      />
-      <div className="min-h-screen bg-background p-4 md:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1>MoodMeter Dashboard</h1>
             <p className="text-muted-foreground mt-1">
-              Anonymous emotional check-in tracking with L1/L2 categorization
+              Track and analyze student emotional data with L1/L2 categorization
             </p>
+            {/* Live/Mock banner */}
+            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+              <span>
+                Data source: {useRealData ? 'LIVE' : 'MOCK'}
+                {useRealData && ` — ${apiData.length} rows`}
+                {isLoading && ' — loading...'}
+              </span>
+              {useRealData && realtimeConnected && (
+                <span className="flex items-center gap-1 text-green-500">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Live
+                </span>
+              )}
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4 flex-wrap">
-            {!isAdminAuthenticated ? (
-              <Button variant="outline" size="sm" onClick={handleAdminClick}>
-                <Settings className="h-4 w-4 mr-2" />
-                Admin Login
-              </Button>
-            ) : (
-              <AdminSettings 
-                isAuthenticated={isAdminAuthenticated}
-                onLogout={handleLogout}
-              />
-            )}
-            <DashboardSettings 
-              onLanguageChange={setSelectedLanguage}
-              onLocationChange={setSelectedLocation}
-            />
+
+          <div className="flex items-center gap-4">
             <ExportButtons data={moodData} stats={stats} />
             <div className="flex items-center space-x-2">
               <Sun className="h-4 w-4 text-muted-foreground" />
-              <Switch 
-                id="night-vision" 
+              <Switch
+                id="night-vision"
                 checked={nightVision}
                 onCheckedChange={setNightVision}
               />
@@ -156,18 +167,12 @@ export default function App() {
 
         {/* Date Search and Custom Range */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <DateSearch 
-            onDateSelect={handleDateSearch}
-            selectedDate={searchDate}
-          />
-          <CustomDateRange 
-            onRangeSelect={handleCustomRange}
-            selectedRange={customRange}
-          />
+          <DateSearch onDateSelect={handleDateSearch} selectedDate={searchDate} />
+          <CustomDateRange onRangeSelect={handleCustomRange} selectedRange={customRange} />
         </div>
 
         {/* Time Period Tabs */}
-        <Tabs value={period} onValueChange={(value) => setPeriod(value as TimePeriod)}>
+        <Tabs value={period} onValueChange={(value: string) => setPeriod(value as TimePeriod)}>
           <TabsList className="grid w-full max-w-md grid-cols-4">
             <TabsTrigger value="day">Day</TabsTrigger>
             <TabsTrigger value="week">Week</TabsTrigger>
@@ -180,14 +185,17 @@ export default function App() {
             {(searchDate || customRange) && (
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <p className="text-sm">
-                  {searchDate && `Showing data for: ${searchDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
-                  {customRange?.from && customRange?.to && `Showing data from: ${customRange.from.toLocaleDateString()} to ${customRange.to.toLocaleDateString()}`}
+                  {searchDate && `Showing data for: ${searchDate.toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                  })}`}
+                  {customRange?.from && customRange?.to &&
+                    `Showing data from: ${customRange.from.toLocaleDateString()} to ${customRange.to.toLocaleDateString()}`}
                 </p>
               </div>
             )}
 
             {/* Stats Cards */}
-            <StatsCards 
+            <StatsCards
               total={stats.total}
               percentages={stats.percentages}
               averageIntensity={stats.averageIntensity}
@@ -209,36 +217,35 @@ export default function App() {
             {/* L2 Emotion Breakdown */}
             <L2EmotionBreakdown data={l2Data} limit={30} />
 
-            {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ThemePreferenceChart 
-                lightThemeCount={stats.lightThemeCount || 0}
-                darkThemeCount={stats.darkThemeCount || 0}
-              />
-              <LocationStats data={moodData} />
-            </div>
-
             {/* Additional Insights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-card border border-border rounded-lg p-6">
                 <h4 className="text-muted-foreground mb-2">Most Common L1</h4>
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ 
-                      backgroundColor: stats.percentages.high_energy_pleasant >= Math.max(...Object.values(stats.percentages)) 
-                        ? '#facc15' 
-                        : stats.percentages.low_energy_pleasant >= Math.max(...Object.values(stats.percentages))
-                        ? '#10b981'
-                        : stats.percentages.high_energy_unpleasant >= Math.max(...Object.values(stats.percentages))
-                        ? '#ef4444'
-                        : '#3b82f6'
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{
+                      backgroundColor:
+                        stats.percentages.high_energy_pleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#facc15'
+                          : stats.percentages.low_energy_pleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#10b981'
+                          : stats.percentages.high_energy_unpleasant >= Math.max(...Object.values(stats.percentages))
+                          ? '#ef4444'
+                          : '#3b82f6',
                     }}
-                  ></div>
+                  />
                   <p>
-                    {Object.entries(stats.percentages).reduce((a, b) => 
-                      stats.percentages[a[0] as keyof typeof stats.percentages] > stats.percentages[b[0] as keyof typeof stats.percentages] ? a : b
-                    )[0].split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    {Object.entries(stats.percentages)
+                      .reduce((a, b) =>
+                        stats.percentages[a[0] as keyof typeof stats.percentages] >
+                        stats.percentages[b[0] as keyof typeof stats.percentages]
+                          ? a
+                          : b
+                      )[0]
+                      .split('_')
+                      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join(' ')}
                   </p>
                 </div>
               </div>
@@ -257,6 +264,5 @@ export default function App() {
         </Tabs>
       </div>
     </div>
-    </>
   );
 }
