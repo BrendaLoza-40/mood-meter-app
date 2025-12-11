@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
@@ -10,6 +11,16 @@ interface ThankYouPageProps {
 export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
   const { getThemeColors } = useTheme();
   const colors = getThemeColors();
+
+  // Auto-redirect to welcome page after 30 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onReset();
+    }, 30000); // 30 seconds
+
+    // Cleanup timer if component unmounts before 30 seconds
+    return () => clearTimeout(timer);
+  }, [onReset]);
 
   return (
     <div className={`min-h-screen ${colors.background} flex items-center justify-center p-6 transition-all duration-500 relative overflow-hidden`}>

@@ -22,6 +22,7 @@ import {
   type MoodEntry as DashboardMoodEntry,
 } from './utils/mockMoodData';
 import { fetchDashboardMoods } from './services/api';
+import { subscribeToMoodsRealtime } from './services/realtime';
 import { Moon, Sun } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -35,27 +36,54 @@ export default function App() {
   const [apiData, setApiData] = useState<DashboardMoodEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [useRealData, setUseRealData] = useState(true); // toggle real vs mock
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
-  // Fetch normalized data from the server
+  // Use Realtime subscription for live updates (when using real data)
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const fetched: DashboardMoodEntry[] = await fetchDashboardMoods();
-        setApiData(fetched);
-        console.log(`Loaded ${fetched.length} entries from API`);
-      } catch (error) {
-        console.error('Failed to load data from API:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!useRealData) {
+      setIsLoading(false);
+      return;
     }
-    loadData();
 
-    // optional auto-refresh
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    setIsLoading(true);
+
+    // Subscribe to realtime updates
+    const unsubscribe = subscribeToMoodsRealtime(
+      // On new entry
+      (newEntry, allEntries) => {
+        console.log(`🆕 New mood entry: ${newEntry.l2Emotion} (Total: ${allEntries.length})`);
+        setApiData(allEntries);
+        setIsLoading(false);
+        setRealtimeConnected(true);
+      },
+      // On full update
+      (allEntries) => {
+        setApiData(allEntries);
+        setIsLoading(false);
+        setRealtimeConnected(true);
+      }
+    );
+
+    // Fallback: if realtime fails, fall back to polling
+    const fallbackInterval = setTimeout(async () => {
+      if (apiData.length === 0) {
+        console.log('⚠️ Realtime not connected, falling back to API polling');
+        try {
+          const fetched = await fetchDashboardMoods();
+          setApiData(fetched);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to load data from API:', error);
+          setIsLoading(false);
+        }
+      }
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(fallbackInterval);
+    };
+  }, [useRealData]);
 
   // Dark mode toggle
   useEffect(() => {
@@ -107,10 +135,18 @@ export default function App() {
               Track and analyze student emotional data with L1/L2 categorization
             </p>
             {/* Live/Mock banner */}
-            <div className="text-xs text-muted-foreground mt-1">
-              Data source: {useRealData ? 'LIVE (server)' : 'MOCK'}
-              {useRealData && ` — ${apiData.length} rows`}
-              {isLoading && ' — loading...'}
+            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+              <span>
+                Data source: {useRealData ? 'LIVE' : 'MOCK'}
+                {useRealData && ` — ${apiData.length} rows`}
+                {isLoading && ' — loading...'}
+              </span>
+              {useRealData && realtimeConnected && (
+                <span className="flex items-center gap-1 text-green-500">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Live
+                </span>
+              )}
             </div>
           </div>
 
