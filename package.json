@@ -51,10 +51,15 @@
       "devDependencies": {
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
+            "concurrently": "^8.2.2",
             "vite": "6.3.5"
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build"
+            "build": "vite build",
+            "dev:kiosk": "cd kiosk-srcMTapp && npm install && npm run dev",
+            "dev:dashboard": "cd dashboard-figma-dashboard && npm install && npm run dev",
+            "dev:server": "cd server && npm install && npm run dev",
+            "dev:all": "concurrently -n server,kiosk,dashboard -c green,cyan,magenta \"npm run dev:server\" \"cd kiosk-srcMTapp && npm install && npm run dev\" \"cd dashboard-figma-dashboard && npm install && npm run dev\""
       }
 }

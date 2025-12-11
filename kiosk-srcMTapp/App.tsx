@@ -21,15 +21,18 @@ import { motion, AnimatePresence } from "motion/react";
 
 type Page = "welcome" | "mood-meter" | "sub-emotions" | "all-emotions" | "thank-you";
 
-const INACTIVITY_TIMEOUT = 30000; // 30 seconds
-const WARNING_TIMEOUT = 20000; // 20 seconds (10 seconds before reset)
+// Inactivity timings (adjust here for different durations)
+const PROMPT_TIMEOUT = 10000; // Show prompt after 10 seconds
+const COUNTDOWN_SECONDS = 5; // Countdown duration once prompt appears
+const RESET_TIMEOUT = COUNTDOWN_SECONDS * 1000; // Reset once countdown completes
+const CLICK_DEBOUNCE_MS = 500; // Prevent rapid clicks - only process first click within this window
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("welcome");
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId | null>(null);
   const [selectedEmotion, setSelectedEmotion] = useState<string>("");
   const [showWarning, setShowWarning] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   
   const { getThemeColors } = useTheme();
   const { language } = useLanguage();
@@ -37,95 +40,163 @@ function AppContent() {
   const colors = getThemeColors();
   
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
-  const warningTimer = useRef<NodeJS.Timeout | null>(null);
+  const promptTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
+  const autoResetTimer = useRef<NodeJS.Timeout | null>(null);
+  const isProcessingClick = useRef<boolean>(false);
 
-  const handleGetStarted = () => {
+  // Debounce wrapper to prevent rapid clicks - handles functions with or without parameters
+  const withClickProtection = useCallback(<T extends (...args: any[]) => void>(fn: T): T => {
+    return ((...args: Parameters<T>) => {
+      if (isProcessingClick.current) {
+        return; // Ignore if already processing a click
+      }
+      isProcessingClick.current = true;
+      fn(...args);
+      // Reset after debounce period
+      setTimeout(() => {
+        isProcessingClick.current = false;
+      }, CLICK_DEBOUNCE_MS);
+    }) as T;
+  }, []);
+
+  const handleGetStarted = useCallback(() => {
     setCurrentPage("mood-meter");
-  };
+  }, []);
 
-  const handleSelectQuadrant = (quadrant: string) => {
+  const handleSelectQuadrant = useCallback((quadrant: string) => {
     setSelectedQuadrant(quadrant as QuadrantId);
     setCurrentPage("sub-emotions");
-  };
+  }, []);
 
-  const handleSelectEmotion = (emotion: string) => {
+  const handleSelectEmotion = useCallback((emotion: string) => {
     setSelectedEmotion(emotion);
     setCurrentPage("thank-you");
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setCurrentPage("mood-meter");
-  };
+  }, []);
 
-  const handleSeeAllEmotions = () => {
+  const handleSeeAllEmotions = useCallback(() => {
     setCurrentPage("all-emotions");
-  };
+  }, []);
+
+  const clearTimers = useCallback(() => {
+    if (promptTimer.current) {
+      clearTimeout(promptTimer.current);
+      promptTimer.current = null;
+    }
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = null;
+    }
+    if (countdownInterval.current) {
+      clearInterval(countdownInterval.current);
+      countdownInterval.current = null;
+    }
+    if (autoResetTimer.current) {
+      clearTimeout(autoResetTimer.current);
+      autoResetTimer.current = null;
+    }
+  }, []);
 
   const handleReset = useCallback(() => {
+    clearTimers();
     setSelectedQuadrant(null);
     setSelectedEmotion("");
     setCurrentPage("welcome");
     setShowWarning(false);
-    setCountdown(10);
-  }, []);
-
-  const clearTimers = useCallback(() => {
-    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-    if (warningTimer.current) clearTimeout(warningTimer.current);
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
-  }, []);
+    setCountdown(COUNTDOWN_SECONDS);
+  }, [clearTimers]);
 
   const resetTimers = useCallback(() => {
     clearTimers();
     
-    // Start timers immediately on all pages
-    // Show warning after 20 seconds
-    warningTimer.current = setTimeout(() => {
-      setShowWarning(true);
-      setCountdown(10);
-      
-      // Start countdown immediately and then continue every second
-      let currentCount = 10;
-      countdownInterval.current = setInterval(() => {
-        currentCount--;
-        setCountdown(currentCount);
-        if (currentCount <= 0) {
-          if (countdownInterval.current) clearInterval(countdownInterval.current);
-          // Trigger reset when countdown reaches 0
-          handleReset();
-        }
-      }, 1000);
-    }, WARNING_TIMEOUT);
+    // Skip timers on welcome page and during emotion selection
+    const shouldTrack =
+      currentPage === "mood-meter" ||
+      currentPage === "sub-emotions" ||
+      currentPage === "all-emotions";
 
-    // Backup reset after 30 seconds (should be triggered by countdown, but keeping as failsafe)
+    if (!shouldTrack) {
+      setShowWarning(false);
+      return;
+    }
+
+    // Show prompt after inactivity threshold
+    promptTimer.current = setTimeout(() => {
+      setShowWarning(true);
+      setCountdown(COUNTDOWN_SECONDS);
+
+      // Failsafe reset in case countdown doesn't fire
+      autoResetTimer.current = setTimeout(() => {
+        handleReset();
+      }, RESET_TIMEOUT);
+    }, PROMPT_TIMEOUT);
+
+    // Safety reset in case anything else goes wrong (prompt + countdown duration + grace)
     inactivityTimer.current = setTimeout(() => {
       handleReset();
-    }, INACTIVITY_TIMEOUT);
-  }, [clearTimers, handleReset]);
+    }, PROMPT_TIMEOUT + RESET_TIMEOUT + 1000);
+  }, [currentPage, clearTimers, handleReset]);
 
   const handleUserActivity = useCallback(() => {
     if (showWarning) {
       setShowWarning(false);
-      setCountdown(10);
+      setCountdown(COUNTDOWN_SECONDS);
     }
     resetTimers();
   }, [showWarning, resetTimers]);
 
   const handleStayActive = () => {
     setShowWarning(false);
-    setCountdown(10);
+    setCountdown(COUNTDOWN_SECONDS);
     resetTimers();
   };
 
-  // Start timer immediately when component mounts or page changes
+  // Drive the countdown while the warning is visible
+  useEffect(() => {
+    if (!showWarning) return;
+
+    countdownInterval.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (countdownInterval.current) {
+            clearInterval(countdownInterval.current);
+            countdownInterval.current = null;
+          }
+          setShowWarning(false);
+          handleReset();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+        countdownInterval.current = null;
+      }
+    };
+  }, [showWarning, handleReset]);
+
+  // Auto-reset when countdown finishes while warning is visible
+  useEffect(() => {
+    if (showWarning && countdown <= 0) {
+      handleReset();
+    }
+  }, [showWarning, countdown, handleReset]);
+
+  // Start timer when page changes (but not on welcome page)
   useEffect(() => {
     resetTimers();
   }, [resetTimers]);
 
   // Set up activity listeners
   useEffect(() => {
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'pointerdown', 'pointermove', 'click'];
     
     events.forEach((event) => {
       document.addEventListener(event, handleUserActivity);
@@ -142,35 +213,35 @@ function AppContent() {
   return (
     <>
       {currentPage === "welcome" && (
-        <WelcomePage onGetStarted={handleGetStarted} />
+        <WelcomePage onGetStarted={withClickProtection(handleGetStarted)} />
       )}
       
       {currentPage === "mood-meter" && (
         <MoodMeterPage 
-          onSelectQuadrant={handleSelectQuadrant}
-          onSeeAllEmotions={handleSeeAllEmotions}
+          onSelectQuadrant={withClickProtection(handleSelectQuadrant)}
+          onSeeAllEmotions={withClickProtection(handleSeeAllEmotions)}
         />
       )}
       
       {currentPage === "sub-emotions" && selectedQuadrant && (
         <SubEmotionsPage
           quadrant={selectedQuadrant}
-          onSelectEmotion={handleSelectEmotion}
-          onBack={handleBack}
+          onSelectEmotion={withClickProtection(handleSelectEmotion)}
+          onBack={withClickProtection(handleBack)}
         />
       )}
       
       {currentPage === "all-emotions" && (
         <AllEmotionsPage
-          onSelectEmotion={handleSelectEmotion}
-          onBack={handleBack}
+          onSelectEmotion={withClickProtection(handleSelectEmotion)}
+          onBack={withClickProtection(handleBack)}
         />
       )}
       
       {currentPage === "thank-you" && (
         <ThankYouPage
           selectedEmotion={selectedEmotion}
-          onReset={handleReset}
+          onReset={withClickProtection(handleReset)}
         />
       )}
 
@@ -191,7 +262,7 @@ function AppContent() {
               <span>{t.areYouStillThere}</span>
             </AlertDialogTitle>
             <AlertDialogDescription className={`${colors.text} opacity-80 text-center pt-4`}>
-              {t.returnToHome}
+              {t.stayActiveInstruction}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={countdown}
@@ -203,7 +274,7 @@ function AppContent() {
                   {countdown}
                 </motion.div>
               </AnimatePresence>
-              {t.seconds}
+              {t.secondsRemaining}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex justify-center sm:justify-center">

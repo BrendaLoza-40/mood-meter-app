@@ -8,6 +8,8 @@ import type { MoodEntry } from '../utils/mockMoodData';
 import { loadConfig, getEnabledAPIs, getEnabledCSVSources, type AppConfig } from '../utils/appConfig';
 import { Alert, AlertDescription } from './ui/alert';
 import { Database, FileText, TrendingUp } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../utils/dashboardTranslations';
 
 interface DataComparisonProps {
   data: MoodEntry[];
@@ -16,6 +18,9 @@ interface DataComparisonProps {
 type DataSourceType = 'none' | 'api' | 'csv';
 
 export function DataComparison({ data }: DataComparisonProps) {
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+  
   const [config, setConfig] = useState<AppConfig>(loadConfig());
   const [enabledAPIs, setEnabledAPIs] = useState(getEnabledAPIs(config));
   const [enabledCSVs, setEnabledCSVs] = useState(getEnabledCSVSources(config));
@@ -264,16 +269,16 @@ export function DataComparison({ data }: DataComparisonProps) {
     <Card className="p-6">
       <div className="space-y-6">
         <div>
-          <h3 className="mb-4">Data Correlation Analysis</h3>
+          <h3 className="mb-4">{t('dataCorrelationAnalysis')}</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Compare mood meter data with external data sources to identify correlations and patterns
+            {t('compareDataSources')}
           </p>
         </div>
 
         {/* Data Source Selection */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="data-source-type">Data Source Type</Label>
+            <Label htmlFor="data-source-type">{t('dataSourceType')}</Label>
             <Select value={dataSourceType} onValueChange={(value) => {
               setDataSourceType(value as DataSourceType);
               setSelectedAPIId('');
@@ -281,20 +286,20 @@ export function DataComparison({ data }: DataComparisonProps) {
               setSelectedParameters([]);
             }}>
               <SelectTrigger id="data-source-type">
-                <SelectValue placeholder="Select source type" />
+                <SelectValue placeholder={t('selectSourceType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="none">{t('none')}</SelectItem>
                 <SelectItem value="api" disabled={enabledAPIs.length === 0}>
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4" />
-                    API Data Source {enabledAPIs.length === 0 && '(None enabled)'}
+                    {t('apiDataSource')} {enabledAPIs.length === 0 && `(${t('noneEnabled')})`}
                   </div>
                 </SelectItem>
                 <SelectItem value="csv" disabled={enabledCSVs.length === 0}>
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    CSV Data Source {enabledCSVs.length === 0 && '(None uploaded)'}
+                    {t('csvDataSource')} {enabledCSVs.length === 0 && `(${t('noneUploaded')})`}
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -304,10 +309,10 @@ export function DataComparison({ data }: DataComparisonProps) {
           {/* API Selection */}
           {dataSourceType === 'api' && (
             <div className="space-y-2">
-              <Label htmlFor="api-select">Select API</Label>
+              <Label htmlFor="api-select">{t('selectAPI')}</Label>
               <Select value={selectedAPIId} onValueChange={setSelectedAPIId}>
                 <SelectTrigger id="api-select">
-                  <SelectValue placeholder="Choose an API" />
+                  <SelectValue placeholder={t('chooseAPI')} />
                 </SelectTrigger>
                 <SelectContent>
                   {enabledAPIs.map((api) => (
@@ -323,10 +328,10 @@ export function DataComparison({ data }: DataComparisonProps) {
           {/* CSV Selection */}
           {dataSourceType === 'csv' && (
             <div className="space-y-2">
-              <Label htmlFor="csv-select">Select CSV</Label>
+              <Label htmlFor="csv-select">{t('selectCSV')}</Label>
               <Select value={selectedCSVId} onValueChange={setSelectedCSVId}>
                 <SelectTrigger id="csv-select">
-                  <SelectValue placeholder="Choose a CSV file" />
+                  <SelectValue placeholder={t('chooseCSV')} />
                 </SelectTrigger>
                 <SelectContent>
                   {enabledCSVs.map((csv) => (
@@ -343,7 +348,7 @@ export function DataComparison({ data }: DataComparisonProps) {
         {/* Emotion Type Selection */}
         {dataSourceType !== 'none' && (selectedAPIId || selectedCSVId) && (
           <div className="space-y-3">
-            <Label>Show Emotion Trends</Label>
+            <Label>{t('showEmotionTrends')}</Label>
             <div className="flex gap-6">
               <div className="flex items-center space-x-2">
                 <Checkbox 
@@ -378,7 +383,7 @@ export function DataComparison({ data }: DataComparisonProps) {
         {/* Parameter Selection with Checkboxes */}
         {dataSourceType !== 'none' && (selectedAPIId || selectedCSVId) && availableParameters.length > 0 && (
           <div className="space-y-3">
-            <Label>Select Parameters to Compare ({selectedParameters.length} selected)</Label>
+            <Label>{t('selectParametersToCompare')} ({selectedParameters.length} {t('selected')})</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {availableParameters.map((param) => (
                 <div key={param} className="flex items-center space-x-2">
@@ -404,7 +409,7 @@ export function DataComparison({ data }: DataComparisonProps) {
           <Alert>
             <TrendingUp className="h-4 w-4" />
             <AlertDescription>
-              Select a data source type and parameter to compare with mood data. Enable data sources in Admin Settings.
+              {t('selectDataSourceMessage')}
             </AlertDescription>
           </Alert>
         )}
@@ -412,7 +417,7 @@ export function DataComparison({ data }: DataComparisonProps) {
         {enabledAPIs.length === 0 && enabledCSVs.length === 0 && dataSourceType === 'none' && (
           <Alert>
             <AlertDescription>
-              No data sources available. Upload CSV files or configure API endpoints in Admin Settings to enable correlation analysis.
+              {t('noDataSourcesAvailable')}
             </AlertDescription>
           </Alert>
         )}
@@ -423,7 +428,7 @@ export function DataComparison({ data }: DataComparisonProps) {
             {/* Correlation Coefficients Summary */}
             {Object.keys(correlations).length > 0 && (
               <div className="space-y-3">
-                <Label>Correlation Coefficients</Label>
+                <Label>{t('correlationCoefficients')}</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {Object.keys(correlations).map((param) => {
                     const hasL1 = showL1Emotions && correlations[param]?.l1 !== null;
@@ -440,22 +445,22 @@ export function DataComparison({ data }: DataComparisonProps) {
                         <div className="space-y-1">
                           {hasL1 && (
                             <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">vs L1:</span>
+                              <span className="text-muted-foreground">{t('vsL1')}:</span>
                               <span className="font-medium">
                                 {correlations[param].l1?.toFixed(3)} 
                                 <span className="ml-1 text-muted-foreground">
-                                  ({Math.abs(correlations[param].l1!) > 0.7 ? 'Strong' : Math.abs(correlations[param].l1!) > 0.4 ? 'Moderate' : 'Weak'})
+                                  ({Math.abs(correlations[param].l1!) > 0.7 ? t('strong') : Math.abs(correlations[param].l1!) > 0.4 ? t('moderate') : t('weak')})
                                 </span>
                               </span>
                             </div>
                           )}
                           {hasL2 && (
                             <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">vs L2:</span>
+                              <span className="text-muted-foreground">{t('vsL2')}:</span>
                               <span className="font-medium">
                                 {correlations[param].l2?.toFixed(3)}
                                 <span className="ml-1 text-muted-foreground">
-                                  ({Math.abs(correlations[param].l2!) > 0.7 ? 'Strong' : Math.abs(correlations[param].l2!) > 0.4 ? 'Moderate' : 'Weak'})
+                                  ({Math.abs(correlations[param].l2!) > 0.7 ? t('strong') : Math.abs(correlations[param].l2!) > 0.4 ? t('moderate') : t('weak')})
                                 </span>
                               </span>
                             </div>
@@ -478,14 +483,14 @@ export function DataComparison({ data }: DataComparisonProps) {
                 />
                 <YAxis 
                   yAxisId="left"
-                  label={{ value: 'Emotion Intensity', angle: -90, position: 'insideLeft', fill: 'var(--foreground)' }}
+                  label={{ value: t('emotionIntensity'), angle: -90, position: 'insideLeft', fill: 'var(--foreground)' }}
                   tick={{ fill: 'var(--foreground)' }}
                   stroke="var(--foreground)"
                 />
                 <YAxis 
                   yAxisId="right"
                   orientation="right"
-                  label={{ value: 'Parameter Values', angle: 90, position: 'insideRight', fill: 'var(--foreground)' }}
+                  label={{ value: t('parameterValues'), angle: 90, position: 'insideRight', fill: 'var(--foreground)' }}
                   tick={{ fill: 'var(--foreground)' }}
                   stroke="var(--foreground)"
                 />
@@ -553,10 +558,10 @@ export function DataComparison({ data }: DataComparisonProps) {
 
             <div className="bg-muted rounded-lg p-4">
               <p className="text-sm text-muted-foreground">
-                This chart shows correlations between{' '}
-                {showL1Emotions && showL2Emotions ? 'L1 and L2 emotion trends' : showL1Emotions ? 'L1 emotion trends' : 'L2 emotion trends'} and{' '}
-                {selectedParameters.length === 1 ? selectedParameters[0].split('_').join(' ') : `${selectedParameters.length} selected parameters`} from{' '}
-                {dataSourceType === 'api' ? 'API' : 'CSV'} data. Correlation coefficients closer to 1 or -1 indicate stronger relationships.
+                {t('chartShowsCorrelations')}{' '}
+                {showL1Emotions && showL2Emotions ? t('l1AndL2EmotionTrends') : showL1Emotions ? t('l1EmotionTrends') : t('l2EmotionTrends')}{' '}
+                {selectedParameters.length === 1 ? selectedParameters[0].split('_').join(' ') : `${selectedParameters.length} ${t('selectedParameters')}`}{' '}
+                {dataSourceType === 'api' ? 'API' : 'CSV'} {t('csvData').toLowerCase()}. {t('correlationCoefficientsExplanation')}
               </p>
             </div>
           </>
