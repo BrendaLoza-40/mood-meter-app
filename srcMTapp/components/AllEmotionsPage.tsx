@@ -92,10 +92,10 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
   ];
 
   return (
-    <div className={`min-h-screen ${colors.background} p-6 transition-all duration-500`}>
+    <div className={`min-h-screen ${colors.background} px-4 py-6 transition-all duration-500`}>
       <ThemeToggle />
       
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,19 +104,19 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
           <motion.button
             onClick={onBack}
             disabled={isSubmitting}
-            className={`flex items-center gap-2 ${colors.text} opacity-70 hover:opacity-100 transition-opacity mb-6 disabled:opacity-50`}
+            className={`flex items-center gap-4 ${colors.text} opacity-70 hover:opacity-100 transition-opacity mb-6 disabled:opacity-50 text-5xl font-bold`}
             whileHover={{ x: -5 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back
           </motion.button>
           
           <div className="text-center">
-            <h1 className={colors.text}>All Emotions</h1>
-            <p className={`${colors.text} opacity-70 mt-2`}>
+            <h1 className={`${colors.text} font-bold`} style={{ fontSize: '8rem' }}>All Emotions</h1>
+            <p className={`${colors.text} opacity-70 mt-6 font-semibold`} style={{ fontSize: '3.5rem' }}>
               Organized by energy level and pleasantness
             </p>
           </div>
@@ -132,9 +132,9 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
               transition={{ delay: 0.1 + categoryIndex * 0.1 }}
               className={`${category.bgColor} rounded-3xl p-6 shadow-lg`}
             >
-              <h2 className={`${colors.text} mb-6 text-center`}>{category.title}</h2>
+              <h2 className={`${colors.text} mb-6 text-center font-bold`} style={{ fontSize: '6rem' }}>{category.title}</h2>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-8">
                 <AnimatePresence>
                   {category.emotions.map((emotion, index) => {
                     const puzzleClipPath = getPuzzlePieceClipPath(index);
@@ -174,15 +174,18 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
                         whileTap={{ scale: 1.10 }}
                         className={`
                           relative bg-gradient-to-br ${category.gradient}
-                          text-white py-5 px-4 transition-all rounded-[20px]
+                          text-white py-4 px-3 transition-all rounded-[24px]
                           disabled:opacity-50 disabled:cursor-not-allowed
-                          overflow-visible
+                          overflow-hidden font-bold flex items-center justify-center text-center
                         `}
                         style={{
                           transformOrigin: "center center",
                           clipPath: isHovered || isClicked ? puzzleClipPath : "none",
-                          minWidth: "160px",
-                          minHeight: "160px",
+                          minWidth: "200px",
+                          minHeight: "200px",
+                          fontSize: "clamp(1.2rem, 3.5vw, 2.5rem)",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
                           boxShadow: isHovered 
                             ? "0 20px 40px rgba(0,0,0,0.2), inset 0 1px 3px rgba(0,0,0,0.1)" 
                             : "0 10px 20px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.05)",
@@ -292,7 +295,8 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className={`text-center mt-12 ${colors.text} opacity-60`}
+          className={`text-center mt-12 ${colors.text} opacity-60 font-semibold`}
+          style={{ fontSize: '2.5rem' }}
         >
           100 emotions organized into 4 energy quadrants
         </motion.p>

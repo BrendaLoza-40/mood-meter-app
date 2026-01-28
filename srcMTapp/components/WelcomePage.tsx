@@ -28,7 +28,7 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
   };
 
   return (
-    <div className={`min-h-screen ${colors.background} flex flex-col justify-center items-center p-8 transition-all duration-500 relative overflow-hidden`}>
+    <div className={`min-h-screen ${colors.background} flex flex-col justify-center items-center px-4 py-6 transition-all duration-500 relative overflow-hidden`}>
       {/* Decorative geometric shapes */}
       <div className="absolute inset-0 pointer-events-none">
         {/* SOLID GEOMETRIC SHAPES */}
@@ -476,7 +476,8 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
           <motion.button
             onClick={handleClick}
             disabled={isWinking}
-            className={`relative w-40 h-40 bg-gradient-to-br ${colors.gradient} rounded-full shadow-2xl flex items-center justify-center cursor-pointer z-10`}
+            className={`relative bg-gradient-to-br ${colors.gradient} rounded-full shadow-2xl flex items-center justify-center cursor-pointer z-10`}
+            style={{ width: '450px', height: '450px' }}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ 
               scale: isExpanding ? 1.5 : 1, 
@@ -505,8 +506,8 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
             <div className="relative">
               {/* Left Eye */}
               <motion.div
-                className="absolute top-0 left-0 w-4 h-4 bg-white rounded-full"
-                style={{ x: -20, y: -5 }}
+                className="absolute top-0 left-0 w-10 h-10 bg-white rounded-full"
+                style={{ x: -30, y: -10 }}
                 animate={{ scaleY: isWinking ? 0.1 : 1 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               />
@@ -514,10 +515,10 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
               {/* Right Eye (winks) */}
               <motion.div
                 className="absolute top-0 right-0 bg-white rounded-full"
-                style={{ x: 20, y: -5 }}
+                style={{ x: 30, y: -10 }}
                 animate={{ 
-                  width: isWinking ? 16 : 16,
-                  height: isWinking ? 2 : 16,
+                  width: isWinking ? 40 : 40,
+                  height: isWinking ? 5 : 40,
                   scaleY: isWinking ? 0.1 : 1,
                 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
@@ -525,7 +526,7 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
 
               {/* Smile */}
               <motion.svg
-                className="w-16 h-16 text-white"
+                className="w-40 h-40 text-white"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -536,7 +537,7 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
                 <motion.path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={5}
                   d="M8 14s1.5 2 4 2 4-2 4-2"
                   animate={{ 
                     d: isWinking 
@@ -549,43 +550,46 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
             </div>
           </motion.button>
         </div>
-
-        {/* Bottom section of hourglass */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          className="text-center mt-8"
-        >
-          <motion.p 
-            className={`${colors.text} opacity-80 mb-6 text-lg px-4`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.8 }}
-            transition={{ delay: 0.7 }}
-          >
-            Your emotions are valid.<br />Let's explore them together.
-          </motion.p>
-          
-          <motion.p 
-            className={`${colors.text} opacity-60`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            transition={{ delay: 0.9 }}
-          >
-            Tap the face to begin
-          </motion.p>
-        </motion.div>
       </div>
 
-      {/* Footer */}
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1 }}
-        className={`${colors.text} opacity-50 text-center absolute bottom-8`}
+      {/* Left side text - positioned absolutely relative to screen */}
+      <motion.div 
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+        className="absolute left-8 top-1/2 -translate-y-1/2 text-left max-w-lg bg-white rounded-3xl px-12 py-10 shadow-xl z-20"
       >
-        No login required
-      </motion.p>
+        {/* Speech bubble tail pointing right toward face */}
+        <div 
+          className="absolute left-full top-1/2 -translate-y-1/2"
+          style={{
+            width: 0,
+            height: 0,
+            borderTop: '25px solid transparent',
+            borderBottom: '25px solid transparent',
+            borderLeft: '30px solid white',
+            filter: 'drop-shadow(2px 0px 2px rgba(0,0,0,0.1))'
+          }}
+        />
+        
+        <motion.p 
+          className={`${colors.text} opacity-80 mb-6 text-2xl`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.8 }}
+          transition={{ delay: 0.7 }}
+        >
+          Your emotions are valid.<br />Let's explore them together.
+        </motion.p>
+        
+        <motion.p 
+          className={`${colors.text} opacity-60`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ delay: 0.9 }}
+        >
+          Tap the face to begin
+        </motion.p>
+      </motion.div>
     </div>
   );
 }

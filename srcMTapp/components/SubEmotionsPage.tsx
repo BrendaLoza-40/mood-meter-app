@@ -115,10 +115,10 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
   };
 
   return (
-    <div className={`min-h-screen ${colors.background} p-6 transition-all duration-500`}>
+    <div className={`min-h-screen ${colors.background} px-4 py-6 transition-all duration-500`}>
       <ThemeToggle />
       
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -127,11 +127,11 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
           <motion.button
             onClick={onBack}
             disabled={isSubmitting}
-            className={`flex items-center gap-2 ${colors.text} opacity-70 hover:opacity-100 transition-opacity mb-6 disabled:opacity-50`}
+            className={`flex items-center gap-3 ${colors.text} opacity-70 hover:opacity-100 transition-opacity mb-6 disabled:opacity-50 text-2xl font-semibold`}
             whileHover={{ x: -5 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back
@@ -142,10 +142,10 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200 }}
-              className={`inline-block w-16 h-16 bg-gradient-to-br ${config.gradient} rounded-full mb-4`}
+              className={`inline-block w-24 h-24 bg-gradient-to-br ${config.gradient} rounded-full mb-6`}
             />
-            <h1 className={colors.text}>{config.title}</h1>
-            <p className={`${colors.text} opacity-70 mt-2`}>
+            <h1 className={`${colors.text} text-8xl font-bold`}>{config.title}</h1>
+            <p className={`${colors.text} opacity-70 mt-4 text-5xl`}>
               Select the specific emotion that matches how you feel
             </p>
           </div>
@@ -155,7 +155,7 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+          className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-8"
         >
           <AnimatePresence>
             {emotionList.map((emotion, index) => {
@@ -195,15 +195,18 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
                   whileTap={{ scale: 1.10 }}
                   className={`
                     relative bg-gradient-to-br ${config.buttonGradient}
-                    text-white py-5 px-4 transition-all rounded-[20px]
+                    text-white py-4 px-3 transition-all rounded-[24px]
                     disabled:opacity-50 disabled:cursor-not-allowed
-                    overflow-visible
+                    overflow-hidden font-bold flex items-center justify-center text-center
                   `}
                   style={{
                     transformOrigin: "center center",
                     clipPath: isHovered || isClicked ? puzzleClipPath : "none",
-                    minWidth: "160px",
-                    minHeight: "160px",
+                    minWidth: "200px",
+                    minHeight: "200px",
+                    fontSize: "clamp(1.2rem, 3.5vw, 2.5rem)",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
                     boxShadow: isHovered 
                       ? "0 20px 40px rgba(0,0,0,0.2), inset 0 1px 3px rgba(0,0,0,0.1)" 
                       : "0 10px 20px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.05)",
@@ -310,7 +313,7 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className={`text-center mt-8 ${colors.text} opacity-60`}
+          className={`text-center mt-8 ${colors.text} opacity-60 text-5xl font-semibold`}
         >
           Take your time. There's no wrong answer.
         </motion.p>

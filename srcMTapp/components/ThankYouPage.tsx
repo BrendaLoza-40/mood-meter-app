@@ -12,7 +12,7 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
   const colors = getThemeColors();
 
   return (
-    <div className={`min-h-screen ${colors.background} flex items-center justify-center p-6 transition-all duration-500 relative overflow-hidden`}>
+    <div className={`min-h-screen ${colors.background} flex items-center justify-center px-4 py-6 transition-all duration-500 relative overflow-hidden`}>
       {/* Decorative geometric shapes */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Top-right: Large rounded square (semi-transparent, partially off-screen) */}
@@ -185,17 +185,17 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="max-w-2xl w-full"
+        className="w-full px-4 max-w-6xl"
       >
-        <div className={`${colors.cardBg} backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 text-center space-y-6`}>
+        <div className={`${colors.cardBg} backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-8 text-center space-y-4`}>
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
-            <div className={`w-24 h-24 bg-gradient-to-br ${colors.gradient} rounded-full mx-auto flex items-center justify-center shadow-xl`}>
+            <div className={`w-16 h-16 bg-gradient-to-br ${colors.gradient} rounded-full mx-auto flex items-center justify-center shadow-xl`}>
               <svg
-                className="w-12 h-12 text-white"
+                className="w-8 h-8 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -215,8 +215,8 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <h1 className={colors.text}>Thank You!</h1>
-            <p className={`${colors.text} opacity-70 mt-2`}>
+            <h1 className={`${colors.text} font-bold`} style={{ fontSize: '3.5rem' }}>Thank You!</h1>
+            <p className={`${colors.text} opacity-70 mt-2 font-semibold`} style={{ fontSize: '2rem' }}>
               You've successfully logged your mood
             </p>
           </motion.div>
@@ -225,11 +225,11 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className={`${colors.accent} rounded-2xl p-6 inline-block`}
+            className="p-4 inline-block"
           >
-            <p className={colors.text}>
+            <p className={`${colors.text} font-semibold`} style={{ fontSize: '2.5rem' }}>
               <span className="opacity-60">You're feeling: </span>
-              <span>{selectedEmotion}</span>
+              <span className="font-bold">{selectedEmotion}</span>
             </p>
           </motion.div>
 
@@ -237,56 +237,52 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className={`${colors.accent} rounded-2xl p-8 space-y-4`}
+            className="p-4 space-y-3"
           >
-            <h2 className={colors.text}>FLC Wellness Center</h2>
+            <h2 className={`${colors.text} font-bold`} style={{ fontSize: '2.5rem' }}>FLC Wellness Center</h2>
             
-            <div className={`${colors.text} space-y-4 opacity-90`}>
+            <div className={`${colors.text} space-y-2 opacity-90 font-semibold`} style={{ fontSize: '1.5rem' }}>
               <p>
                 We're here to support your mental health and well-being.
               </p>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <motion.div 
                   className="flex items-center justify-center gap-3"
                   whileHover={{ x: 5 }}
                 >
-                  <div className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </div>
-                  <span>(555) 123-4567</span>
+                  <span style={{ fontSize: '1.5rem' }}>(555) 123-4567</span>
                 </motion.div>
                 
                 <motion.div 
                   className="flex items-center justify-center gap-3"
                   whileHover={{ x: 5 }}
                 >
-                  <div className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <span>wellness@flc.edu</span>
+                  <span style={{ fontSize: '1.5rem' }}>wellness@flc.edu</span>
                 </motion.div>
                 
                 <motion.div 
                   className="flex items-center justify-center gap-3"
                   whileHover={{ x: 5 }}
                 >
-                  <div className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${colors.gradient} rounded-full flex items-center justify-center`}>
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span>Mon-Fri, 8am-5pm</span>
+                  <span style={{ fontSize: '1.5rem' }}>Mon-Fri, 8am-5pm</span>
                 </motion.div>
               </div>
-
-              <p className="pt-4 opacity-80">
-                Our counselors are available for individual sessions, group therapy, and crisis support.
-              </p>
             </div>
           </motion.div>
 
@@ -294,27 +290,18 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="pt-4 space-y-4"
+            className="pt-3 space-y-3"
           >
-            <p className={`${colors.text} opacity-60`}>Need to talk to someone?</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <motion.button
-                onClick={onReset}
-                className={`px-6 py-3 ${colors.cardBg} ${colors.text} rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm border-2 ${colors.text.replace('text-', 'border-')}`}
-                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Back to Home Screen
-              </motion.button>
-              <motion.button
-                onClick={() => window.open('tel:555-123-4567', '_self')}
-                className={`px-6 py-3 bg-gradient-to-br ${colors.gradient} text-white rounded-full transition-all duration-300 shadow-lg`}
-                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Contact Wellness Center
-              </motion.button>
-            </div>
+            <p className={`${colors.text} opacity-60 font-semibold`} style={{ fontSize: '2rem' }}>Need to talk to someone?</p>
+            <motion.button
+              onClick={onReset}
+              className={`px-32 py-8 ${colors.cardBg} ${colors.text} rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm border-2 ${colors.text.replace('text-', 'border-')} font-bold`}
+              style={{ fontSize: '1.75rem' }}
+              whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Back to Home Screen
+            </motion.button>
           </motion.div>
         </div>
       </motion.div>

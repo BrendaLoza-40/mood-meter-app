@@ -47,7 +47,7 @@ export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions }: MoodMeterP
   const colors = getThemeColors();
 
   return (
-    <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center p-6 transition-all duration-500 relative`}>
+    <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center px-4 py-6 transition-all duration-500 relative`}>
       <ThemeToggle />
       
       {/* See All Emotions - Themed Side Button */}
@@ -77,57 +77,22 @@ export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions }: MoodMeterP
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl w-full"
+        className="w-full"
       >
         <motion.div 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
-          <h1 className={`${colors.text} mb-3`}>How are you feeling?</h1>
-          <p className={`${colors.text} opacity-70`}>
+          <p className={`${colors.text} opacity-70 text-5xl`}>
             Select the area that best describes your current state
           </p>
         </motion.div>
 
-        <div className="relative max-w-2xl mx-auto">
-          {/* Axis Labels */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`absolute -top-12 left-1/2 -translate-x-1/2 ${colors.text} opacity-60`}
-          >
-            High Energy
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`absolute -bottom-12 left-1/2 -translate-x-1/2 ${colors.text} opacity-60`}
-          >
-            Low Energy
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`absolute top-1/2 -left-28 -translate-y-1/2 ${colors.text} opacity-60 -rotate-90`}
-          >
-            Unpleasant
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`absolute top-1/2 -right-28 -translate-y-1/2 ${colors.text} opacity-60 -rotate-90`}
-          >
-            Pleasant
-          </motion.div>
-
+        <div className="relative w-full mx-auto px-48">
           {/* Mood Meter Grid */}
-          <div className="grid grid-cols-2 gap-3 aspect-square">
+          <div className="grid grid-cols-2 gap-6" style={{ aspectRatio: '2.5/1' }}>
             {quadrantData.map((quadrant, index) => (
               <motion.button
                 key={quadrant.id}
@@ -142,14 +107,14 @@ export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions }: MoodMeterP
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`relative bg-gradient-to-br ${quadrant.gradient} ${quadrant.hoverGradient} rounded-3xl p-8 transition-all duration-300 group overflow-hidden shadow-xl`}
+                className={`relative bg-gradient-to-br ${quadrant.gradient} ${quadrant.hoverGradient} rounded-3xl p-16 transition-all duration-300 group overflow-hidden shadow-xl`}
               >
                 {/* Glow effect on hover */}
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-3xl" />
                 
-                <div className="relative h-full flex flex-col items-center justify-center text-white space-y-2">
-                  <span className="text-lg opacity-90">{quadrant.title}</span>
-                  <span>{quadrant.subtitle}</span>
+                <div className="relative h-full flex flex-col items-center justify-center text-white space-y-4">
+                  <span className="text-5xl font-bold opacity-90">{quadrant.title}</span>
+                  <span className="text-4xl font-semibold">{quadrant.subtitle}</span>
                 </div>
                 
                 {/* Subtle pulse animation */}
@@ -172,7 +137,7 @@ export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions }: MoodMeterP
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className={`text-center mt-12 ${colors.text} opacity-60`}
+          className={`text-center mt-8 ${colors.text} opacity-60 text-5xl font-semibold`}
         >
           Tap any quadrant to explore specific emotions
         </motion.p>
