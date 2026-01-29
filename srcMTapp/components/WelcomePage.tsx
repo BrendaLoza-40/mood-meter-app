@@ -8,10 +8,19 @@ interface WelcomePageProps {
 }
 
 export function WelcomePage({ onGetStarted }: WelcomePageProps) {
-  const { getThemeColors } = useTheme();
+  const { getThemeColors, theme } = useTheme();
   const colors = getThemeColors();
   const [isWinking, setIsWinking] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
+
+  // Arrow colors based on theme
+  const arrowColors = {
+    day: { start: '#FF8A65', end: '#FFB74D', text: 'text-white' },
+    dark: { start: '#4ade80', end: '#60a5fa', text: 'text-black' },
+    lightblue: { start: '#64B5F6', end: '#90CAF9', text: 'text-[#1565C0]' },
+    yellow: { start: '#FDD835', end: '#FFEB3B', text: 'text-[#F57F17]' },
+  };
+  const currentArrow = arrowColors[theme];
 
   const handleClick = () => {
     setIsWinking(true);
@@ -110,7 +119,6 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
           }}
           transition={{ 
             opacity: { duration: 1, delay: 0.2 },
-            scale: { duration: 1, delay: 0.2 },
             x: { duration: 3500 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
             y: { duration: 3000 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
             rotate: { duration: 5500 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
@@ -417,9 +425,9 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
           </motion.h1>
           
           <motion.p 
-            className={`${colors.text} opacity-70 text-lg`}
+            className={`${colors.text} text-4xl md:text-5xl lg:text-6xl font-bold`}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.7 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
             Check in with yourself
@@ -552,43 +560,44 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
         </div>
       </div>
 
-      {/* Left side text - positioned absolutely relative to screen */}
+      {/* Left side text with arrow - positioned absolutely relative to screen */}
       <motion.div 
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="absolute left-8 top-1/2 -translate-y-1/2 text-left max-w-lg bg-white rounded-3xl px-12 py-10 shadow-xl z-20"
+        className="absolute left-4 md:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-20"
       >
-        {/* Speech bubble tail pointing right toward face */}
-        <div 
-          className="absolute left-full top-1/2 -translate-y-1/2"
-          style={{
-            width: 0,
-            height: 0,
-            borderTop: '25px solid transparent',
-            borderBottom: '25px solid transparent',
-            borderLeft: '30px solid white',
-            filter: 'drop-shadow(2px 0px 2px rgba(0,0,0,0.1))'
-          }}
-        />
-        
-        <motion.p 
-          className={`${colors.text} opacity-80 mb-6 text-2xl`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.8 }}
-          transition={{ delay: 0.7 }}
-        >
-          Your emotions are valid.<br />Let's explore them together.
-        </motion.p>
-        
-        <motion.p 
-          className={`${colors.text} opacity-60`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ delay: 0.9 }}
-        >
-          Tap the face to begin
-        </motion.p>
+        {/* Super long fat arrow with text inside */}
+        <div className="relative">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+          >
+            <svg 
+              className="w-[500px] h-32 md:w-[700px] md:h-44 lg:w-[900px] lg:h-56"
+              viewBox="0 0 600 150" 
+            >
+              <defs>
+                <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style={{ stopColor: currentArrow.start }} />
+                  <stop offset="100%" style={{ stopColor: currentArrow.end }} />
+                </linearGradient>
+              </defs>
+              <polygon points="0,35 500,35 500,0 600,75 500,150 500,115 0,115" fill="url(#arrowGradient)" />
+            </svg>
+          </motion.div>
+          
+          {/* Text positioned inside the arrow */}
+          <motion.p 
+            className={`absolute top-1/2 left-8 md:left-12 lg:left-16 -translate-y-1/2 text-2xl md:text-4xl lg:text-5xl font-bold leading-snug ${currentArrow.text}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            let's explore your emotions
+          </motion.p>
+        </div>
       </motion.div>
     </div>
   );

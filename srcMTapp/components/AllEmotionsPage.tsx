@@ -116,9 +116,6 @@ export function AllEmotionsPage({ onSelectEmotion, onBack }: AllEmotionsPageProp
           
           <div className="text-center">
             <h1 className={`${colors.text} font-bold`} style={{ fontSize: '8rem' }}>All Emotions</h1>
-            <p className={`${colors.text} opacity-70 mt-6 font-semibold`} style={{ fontSize: '3.5rem' }}>
-              Organized by energy level and pleasantness
-            </p>
           </div>
         </motion.div>
 
