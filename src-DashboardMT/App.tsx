@@ -23,12 +23,14 @@ import { fetchMoodEntries } from "./services/api";
 import { Moon, Sun } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { LocationsAdmin } from "./components/LocationsAdmin";
+import { getTestingMode, setTestingMode } from "./utils/testingMode";
 
 type TimePeriod = "day" | "week" | "month" | "year";
 type Tab = TimePeriod | "admin";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("week");
+  const [testingMode, setTestingModeState] = useState(getTestingMode);
 
   // Only analytics tabs have a real "period"
   const period: TimePeriod = tab === "admin" ? "week" : tab;
@@ -40,8 +42,18 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [useRealData, setUseRealData] = useState(true);
 
+  const toggleTestingMode = (on: boolean) => {
+    setTestingMode(on);
+    setTestingModeState(on);
+  };
+
   useEffect(() => {
     async function loadData() {
+      if (testingMode) {
+        setApiData([]);
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const entries = await fetchMoodEntries();
@@ -55,9 +67,14 @@ export default function App() {
     }
 
     loadData();
+    if (testingMode) return;
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [testingMode]);
+
+  useEffect(() => {
+    if (testingMode && tab === "admin") setTab("week");
+  }, [testingMode]);
 
   useEffect(() => {
     if (nightVision) document.documentElement.classList.add("dark");
@@ -65,14 +82,14 @@ export default function App() {
   }, [nightVision]);
 
   const rawMoodData = useMemo(() => {
-    if (useRealData && apiData.length > 0) return apiData;
+    if (!testingMode && useRealData && apiData.length > 0) return apiData;
 
     if (customRange?.from && customRange?.to) {
       return generateMockDataForDateRange(customRange.from, customRange.to);
     }
 
     return generateMockData(period);
-  }, [useRealData, apiData, period, customRange]);
+  }, [testingMode, useRealData, apiData, period, customRange]);
 
   const moodData = useMemo(() => {
     if (searchDate) return filterDataByDate(rawMoodData, searchDate);
@@ -171,8 +188,16 @@ export default function App() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <ExportButtons data={moodData} stats={stats} />
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="testing-mode" className="text-sm text-muted-foreground">Demo mode</Label>
+              <Switch
+                id="testing-mode"
+                checked={testingMode}
+                onCheckedChange={toggleTestingMode}
+              />
+            </div>
             <div className="flex items-center space-x-2">
               <Sun className="h-4 w-4 text-muted-foreground" />
               <Switch id="night-vision" checked={nightVision} onCheckedChange={setNightVision} />
@@ -190,12 +215,12 @@ export default function App() {
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
-          <TabsList className="grid w-full max-w-2xl grid-cols-5">
+          <TabsList className={`grid w-full max-w-2xl ${testingMode ? "grid-cols-4" : "grid-cols-5"}`}>
             <TabsTrigger value="day">Day</TabsTrigger>
             <TabsTrigger value="week">Week</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>
             <TabsTrigger value="year">Year</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
+            {!testingMode && <TabsTrigger value="admin">Admin</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="day" className="space-y-6 mt-6">
@@ -214,9 +239,11 @@ export default function App() {
             {AnalyticsPanel}
           </TabsContent>
 
-          <TabsContent value="admin" className="space-y-6 mt-6">
-            <LocationsAdmin />
-          </TabsContent>
+          {!testingMode && (
+            <TabsContent value="admin" className="space-y-6 mt-6">
+              <LocationsAdmin />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

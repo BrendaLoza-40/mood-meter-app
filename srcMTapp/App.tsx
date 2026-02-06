@@ -11,8 +11,7 @@ import { getDeviceId } from "./services/deviceId";
 import { useEffect } from "react";
 import { KioskSetupPage } from "./components/KioskSetupPage";
 import { getKioskLocation } from "./services/kioskRegistry";
-
-
+import { getTestingMode, setTestingMode } from "./utils/testingMode";
 
 type Page = "welcome" | "mood-meter" | "sub-emotions" | "all-emotions" | "thank-you";
 
@@ -24,16 +23,21 @@ function AppContent() {
   const [startMs, setStartMs] = useState<number | null>(null);
   const [isSetupChecked, setIsSetupChecked] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
-
+  const [testingMode, setTestingModeState] = useState(getTestingMode);
 
   useEffect(() => {
     (async () => {
+      if (testingMode) {
+        setNeedsSetup(false);
+        setIsSetupChecked(true);
+        return;
+      }
       const deviceId = getDeviceId();
       const location = await getKioskLocation(deviceId);
       setNeedsSetup(!location);
       setIsSetupChecked(true);
     })();
-  }, []);
+  }, [testingMode]);
 
 
   const handleGetStarted = () => {
@@ -51,27 +55,27 @@ function AppContent() {
 
   const handleSelectEmotion = async (emotion: string) => {
     const timeToSelectMs = startMs ? Date.now() - startMs : 0;
-    console.log("handleSelectEmotion fired with:", emotion);
-
     setSelectedEmotion(emotion);
-    
 
-
-    try {
-      await insertMoodEntry({
-        deviceId: getDeviceId(),
-        quadrant: selectedQuadrantStr || "unknown",
-        emotion,
-        timeToSelectMs,
-      });
-
-    } catch (e) {
-      console.error(e);
-      // don't block the user flow, but you can show a message if you want
+    if (!testingMode) {
+      try {
+        await insertMoodEntry({
+          deviceId: getDeviceId(),
+          quadrant: selectedQuadrantStr || "unknown",
+          emotion,
+          timeToSelectMs,
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
     setStartMs(null);
-
     setCurrentPage("thank-you");
+  };
+
+  const toggleTestingMode = (on: boolean) => {
+    setTestingMode(on);
+    setTestingModeState(on);
   };
 
 
@@ -110,7 +114,11 @@ function AppContent() {
   return (
     <>
       {currentPage === "welcome" && (
-        <WelcomePage onGetStarted={handleGetStarted} />
+        <WelcomePage
+          onGetStarted={handleGetStarted}
+          testingMode={testingMode}
+          onTestingModeChange={toggleTestingMode}
+        />
       )}
       
       {currentPage === "mood-meter" && (

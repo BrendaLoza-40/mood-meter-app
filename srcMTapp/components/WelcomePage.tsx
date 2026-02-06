@@ -5,9 +5,11 @@ import { ThemeToggle } from "./ThemeToggle";
 
 interface WelcomePageProps {
   onGetStarted: () => void;
+  testingMode?: boolean;
+  onTestingModeChange?: (on: boolean) => void;
 }
 
-export function WelcomePage({ onGetStarted }: WelcomePageProps) {
+export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeChange }: WelcomePageProps) {
   const { getThemeColors, theme } = useTheme();
   const colors = getThemeColors();
   const [isWinking, setIsWinking] = useState(false);
@@ -405,7 +407,27 @@ export function WelcomePage({ onGetStarted }: WelcomePageProps) {
       </div>
       
       <ThemeToggle />
-      
+
+      {onTestingModeChange && (
+        <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30 flex items-center gap-2">
+          <label className={`text-sm font-medium ${colors.text} opacity-90`} htmlFor="demo-mode">
+            Demo mode
+          </label>
+          <button
+            id="demo-mode"
+            type="button"
+            role="switch"
+            aria-checked={testingMode}
+            onClick={() => onTestingModeChange(!testingMode)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${testingMode ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${testingMode ? "translate-x-5" : "translate-x-0"}`}
+            />
+          </button>
+        </div>
+      )}
+
       {/* Hourglass-shaped container */}
       <div className="relative w-full max-w-md">
         {/* Top section of hourglass */}
