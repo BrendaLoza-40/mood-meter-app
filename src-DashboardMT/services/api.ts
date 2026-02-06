@@ -74,6 +74,10 @@ function mapRowToMoodEntry(row: any): MoodEntry {
  * Fetches all mood entries from Supabase
  */
 export async function fetchMoodEntries(): Promise<MoodEntry[]> {
+  if (!supabase) {
+    console.warn("Supabase not configured (missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY). Set env vars in Vercel.");
+    return [];
+  }
   try {
     const { data, error } = await supabase
       .from("mood_entries")
@@ -138,6 +142,7 @@ export interface LocationRow {
 }
 
 export async function fetchLocations(): Promise<LocationRow[]> {
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from("locations")
     .select("*")
@@ -151,6 +156,7 @@ export async function fetchLocations(): Promise<LocationRow[]> {
 }
 
 export async function createLocation(name: string) {
+  if (!supabase) throw new Error("Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
   const trimmed = name.trim();
   if (!trimmed) throw new Error("Location name required");
 
@@ -165,6 +171,7 @@ export async function createLocation(name: string) {
 }
 
 export async function setLocationActive(locationId: string, active: boolean) {
+  if (!supabase) throw new Error("Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
   const { data, error } = await supabase
     .from("locations")
     .update({ active })
