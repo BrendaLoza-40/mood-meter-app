@@ -116,27 +116,28 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
 
   return (
     <div className={`min-h-screen ${colors.background} px-4 py-6 transition-all duration-500`}>
+      <div className="fixed top-4 left-4 z-50">
+        <motion.button
+          onClick={onBack}
+          disabled={isSubmitting}
+          className={`flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-full px-6 py-4 shadow-lg ${colors.text} opacity-90 hover:opacity-100 transition-opacity disabled:opacity-50 font-bold text-2xl`}
+          whileHover={{ x: -3 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <svg className="w-10 h-10 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </motion.button>
+      </div>
       <ThemeToggle />
-      
-      <div className="w-full">
-        <motion.div 
+
+      <div className="w-full pt-20">
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <motion.button
-            onClick={onBack}
-            disabled={isSubmitting}
-            className={`flex items-center gap-3 ${colors.text} opacity-70 hover:opacity-100 transition-opacity mb-6 disabled:opacity-50 text-2xl font-semibold`}
-            whileHover={{ x: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-          </motion.button>
-          
           <div className="text-center">
             <motion.div
               initial={{ scale: 0 }}

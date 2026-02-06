@@ -125,9 +125,10 @@ function AppContent() {
       )}
       
       {currentPage === "mood-meter" && (
-        <MoodMeterPage 
+        <MoodMeterPage
           onSelectQuadrant={handleSelectQuadrant}
           onSeeAllEmotions={handleSeeAllEmotions}
+          onBack={() => setCurrentPage("welcome")}
         />
       )}
       

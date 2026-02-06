@@ -5,6 +5,7 @@ import { ThemeToggle } from "./ThemeToggle";
 interface MoodMeterPageProps {
   onSelectQuadrant: (quadrant: string) => void;
   onSeeAllEmotions?: () => void;
+  onBack?: () => void;
 }
 
 const quadrantData = [
@@ -42,14 +43,29 @@ const quadrantData = [
   },
 ];
 
-export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions }: MoodMeterPageProps) {
+export function MoodMeterPage({ onSelectQuadrant, onSeeAllEmotions, onBack }: MoodMeterPageProps) {
   const { getThemeColors } = useTheme();
   const colors = getThemeColors();
 
   return (
     <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center px-4 py-6 transition-all duration-500 relative`}>
+      {onBack && (
+        <div className="fixed top-4 left-4 z-50">
+          <motion.button
+            onClick={onBack}
+            className={`flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-full px-6 py-4 shadow-lg ${colors.text} opacity-90 hover:opacity-100 transition-opacity font-bold text-2xl`}
+            whileHover={{ x: -3 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg className="w-10 h-10 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </motion.button>
+        </div>
+      )}
       <ThemeToggle />
-      
+
       {/* See All Emotions - Themed Side Button */}
       {onSeeAllEmotions && (
         <motion.button

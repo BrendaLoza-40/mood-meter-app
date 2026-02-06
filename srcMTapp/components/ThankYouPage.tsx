@@ -290,17 +290,16 @@ export function ThankYouPage({ selectedEmotion, onReset }: ThankYouPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="pt-3 space-y-3"
+            className="pt-3"
           >
-            <p className={`${colors.text} opacity-60 font-semibold`} style={{ fontSize: '2rem' }}>Need to talk to someone?</p>
             <motion.button
               onClick={onReset}
-              className={`px-32 py-8 ${colors.cardBg} ${colors.text} rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm border-2 ${colors.text.replace('text-', 'border-')} font-bold`}
-              style={{ fontSize: '1.75rem' }}
+              className={`min-w-[280px] px-16 py-6 rounded-full ${colors.cardBg} ${colors.text} transition-all duration-300 shadow-lg backdrop-blur-sm border-2 ${colors.text.replace('text-', 'border-')} font-bold`}
+              style={{ fontSize: '2.5rem' }}
               whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}
               whileTap={{ scale: 0.95 }}
             >
-              Back to Home Screen
+              Home
             </motion.button>
           </motion.div>
         </div>
