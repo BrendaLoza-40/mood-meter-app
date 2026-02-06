@@ -102,7 +102,10 @@ function AppContent() {
   if (needsSetup) {
     return (
       <KioskSetupPage
-        onDone={() => {
+        onDone={() => setNeedsSetup(false)}
+        onUseDemoMode={() => {
+          setTestingMode(true);
+          setTestingModeState(true);
           setNeedsSetup(false);
         }}
       />

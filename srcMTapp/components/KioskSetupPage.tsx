@@ -3,7 +3,12 @@ import { upsertKioskLocationId } from "../services/kioskRegistry";
 import { getDeviceId } from "../services/deviceId";
 import { fetchLocations, type LocationRow } from "../services/locationsApi";
 
-export function KioskSetupPage({ onDone }: { onDone: () => void }) {
+type KioskSetupPageProps = {
+  onDone: () => void;
+  onUseDemoMode?: () => void;
+};
+
+export function KioskSetupPage({ onDone, onUseDemoMode }: KioskSetupPageProps) {
   const [locations, setLocations] = useState<LocationRow[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -81,6 +86,26 @@ export function KioskSetupPage({ onDone }: { onDone: () => void }) {
         )}
 
         {error && <p style={{ color: "crimson", marginTop: 10 }}>{error}</p>}
+
+        {onUseDemoMode && (
+          <p style={{ marginTop: 16, marginBottom: 0 }}>
+            <button
+              type="button"
+              onClick={onUseDemoMode}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#2563eb",
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontSize: 14,
+                padding: 0,
+              }}
+            >
+              Use demo mode (no server or location required)
+            </button>
+          </p>
+        )}
 
         <button
           disabled={saving || loading || locations.length === 0 || !selectedLocationId}
