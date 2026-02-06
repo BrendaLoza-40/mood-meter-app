@@ -195,11 +195,38 @@ The UI design is based on Figma mockups with:
 
 ## 📦 Build for Production
 
-**Build all apps:**
+**Dashboard (default):**
+```bash
+npm run build
+```
+Builds `src-DashboardMT` and outputs to `src-DashboardMT/dist`.
+
+**Kiosk app:**
+```bash
+npm run build:kiosk
+```
+Builds `srcMTapp` and outputs to `srcMTapp/dist`.
+
+**Build both manually:**
 ```bash
 cd srcMTapp && npm run build
 cd ../src-DashboardMT && npm run build
 ```
+
+## 🚀 Deploying to Vercel (Dashboard + Kiosk)
+
+Deploy **both** the dashboard and the kiosk app by using **two Vercel projects** (same repo, different root):
+
+| App       | Vercel project        | Root Directory | Build Command              | Output Directory   |
+|----------|------------------------|----------------|----------------------------|--------------------|
+| Dashboard| e.g. `mood-meter-dash` | *(leave empty)*| `npm run build`            | `src-DashboardMT/dist` |
+| Kiosk    | e.g. `mood-meter-kiosk`| `srcMTapp`     | `npm run build`            | `dist`             |
+
+**Steps:**
+1. **Dashboard:** Create a Vercel project linked to this repo. Do **not** set a Root Directory. Build command: `npm run build`. Output: `src-DashboardMT/dist`. Add env vars `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` if you use Supabase.
+2. **Kiosk:** Create a **second** Vercel project linked to the same repo. Set **Root Directory** to `srcMTapp`. Build command: `npm run build`. Output: `dist`. Add the same Supabase env vars if needed.
+
+Each project will have its own URL (e.g. `mood-meter-dash.vercel.app` and `mood-meter-kiosk.vercel.app`).
 
 **Backend production:**
 ```bash

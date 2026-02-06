@@ -6,6 +6,7 @@ export async function insertMoodEntry(args: {
   emotion: string;
   timeToSelectMs: number;
 }) {
+  if (!supabase) throw new Error("Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
   const { error } = await supabase.from("mood_entries").insert({
     device_id: args.deviceId,
     quadrant: args.quadrant,

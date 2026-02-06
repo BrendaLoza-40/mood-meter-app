@@ -1,9 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-console.log("KIOSK ENV URL =", url);
-console.log("KIOSK ENV KEY present =", !!key);
-
-export const supabase = createClient(url as string, key as string);
+/** Only create client when env vars exist so the app doesn't crash on load (e.g. missing Vercel env). */
+export const supabase: SupabaseClient | null =
+  url && key ? createClient(url, key) : null;

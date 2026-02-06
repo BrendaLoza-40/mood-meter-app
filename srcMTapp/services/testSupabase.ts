@@ -1,6 +1,7 @@
 import { supabase } from "./supabaseClient";
 
 export async function testInsert() {
+  if (!supabase) throw new Error("Supabase not configured.");
   const { error } = await supabase.from("mood_entries").insert({
     device_id: "test-device",
     quadrant: "red",

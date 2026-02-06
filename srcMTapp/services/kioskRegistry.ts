@@ -1,6 +1,7 @@
 import { supabase } from "./supabaseClient";
 
 export async function getKioskLocation(deviceId: string): Promise<string | null> {
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from("kiosks")
     .select("location_name")
@@ -20,6 +21,7 @@ export async function upsertKioskLocationId(
   locationId: string,
   locationName: string
 ) {
+  if (!supabase) throw new Error("Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
   const { error } = await supabase
     .from("kiosks")
     .upsert({
@@ -34,6 +36,7 @@ export async function upsertKioskLocationId(
 
 
 export async function upsertKioskLocation(deviceId: string, locationName: string) {
+  if (!supabase) throw new Error("Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.");
   const { error } = await supabase.from("kiosks").upsert({
     device_id: deviceId,
     location_name: locationName.trim(),
@@ -45,6 +48,7 @@ export async function upsertKioskLocation(deviceId: string, locationName: string
 export type LocationRow = { id: string; name: string; active: boolean };
 
 export async function fetchActiveLocations(): Promise<LocationRow[]> {
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from("locations")
     .select("id,name,active")
