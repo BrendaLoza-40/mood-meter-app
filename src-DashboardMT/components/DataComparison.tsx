@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis } from 'recharts';
-import type { MoodEntry, L1Category } from '../utils/mockMoodData';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
+
+import type { MoodEntry } from '../services/api';
+import type { L1Category } from '../utils/mockMoodData';
+
 import { L1_COLORS, L1_LABELS } from '../utils/emotionCategories';
 
 interface DataComparisonProps {
@@ -23,10 +26,19 @@ export function DataComparison({ data }: DataComparisonProps) {
       low_energy_pleasant: { total: 0, count: 0 }
     };
 
-    data.forEach(entry => {
-      categoryData[entry.l1Category].total += entry.responseTime;
-      categoryData[entry.l1Category].count++;
+    data.forEach((entry: any) => {
+      const category = (entry.l1Category ?? entry.l1?.id) as L1Category | undefined;
+      const responseTimeMs =
+        Number(entry.responseTime ?? entry.timeToSelectMs ?? 0);
+
+      if (!categoryData[category as L1Category]) return; // skip unknown categories
+
+      categoryData[category as L1Category].total += responseTimeMs;
+      categoryData[category as L1Category].count++;
     });
+
+   
+
 
     return Object.entries(categoryData).map(([category, values]) => ({
       category: L1_LABELS[category as L1Category],
@@ -36,19 +48,34 @@ export function DataComparison({ data }: DataComparisonProps) {
   };
 
   const getIntensityVsResponseTimeData = () => {
-    return data.map(entry => ({
-      intensity: entry.intensity,
-      responseTime: entry.responseTime / 1000,
-      category: entry.l1Category,
-      fill: L1_COLORS[entry.l1Category]
-    }));
+    return data
+      .map((entry: any) => {
+        const category = (entry.l1Category ?? entry.l1?.id) as L1Category | undefined;
+        if (!category || !(category in L1_COLORS)) return null;
+
+        const responseTimeMs = Number(entry.responseTime ?? entry.timeToSelectMs ?? 0);
+
+        return {
+          intensity: Number(entry.intensity ?? 5), // default mid intensity
+          responseTime: responseTimeMs / 1000,
+          category,
+          fill: L1_COLORS[category]
+        };
+      })
+      .filter(Boolean) as any[];
   };
+
+
 
   const getCategoryByHourData = () => {
     const hourData: Record<number, Record<L1Category, number>> = {};
 
-    data.forEach(entry => {
+    data.forEach((entry: any) => {
       const hour = new Date(entry.timestamp).getHours();
+
+      const category = (entry.l1Category ?? entry.l1?.id) as L1Category | undefined;
+      if (!category) return;
+
       if (!hourData[hour]) {
         hourData[hour] = {
           high_energy_pleasant: 0,
@@ -57,8 +84,11 @@ export function DataComparison({ data }: DataComparisonProps) {
           low_energy_pleasant: 0
         };
       }
-      hourData[hour][entry.l1Category]++;
+
+      if (!(category in hourData[hour])) return;
+      hourData[hour][category as L1Category]++;
     });
+
 
     return Object.entries(hourData)
       .sort(([a], [b]) => parseInt(a) - parseInt(b))
@@ -68,6 +98,9 @@ export function DataComparison({ data }: DataComparisonProps) {
       }));
   };
 
+  const categoryVsResponse = getCategoryVsResponseTimeData();
+
+  
   return (
     <Card className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -86,7 +119,7 @@ export function DataComparison({ data }: DataComparisonProps) {
 
       <ResponsiveContainer width="100%" height={400}>
         {metric === 'category_vs_response_time' && (
-          <BarChart data={getCategoryVsResponseTimeData()}>
+          <BarChart data={categoryVsResponse}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="category" />
             <YAxis label={{ value: 'Avg Response Time (seconds)', angle: -90, position: 'insideLeft' }} />
@@ -98,10 +131,11 @@ export function DataComparison({ data }: DataComparisonProps) {
               }}
             />
             <Bar dataKey="avgResponseTime" name="Avg Response Time (s)">
-              {getCategoryVsResponseTimeData().map((entry, index) => (
-                <Bar key={`bar-${index}`} dataKey="avgResponseTime" fill={entry.fill} />
+              {categoryVsResponse.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Bar>
+
           </BarChart>
         )}
 

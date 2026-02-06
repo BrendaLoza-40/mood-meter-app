@@ -200,32 +200,40 @@ export function aggregateMoodData(
   }));
 }
 
-export function aggregateL2Emotions(entries: MoodEntry[]): L2AggregatedData[] {
+export function aggregateL2Emotions(entries: any[]): L2AggregatedData[] {
   const emotionMap = new Map<string, { count: number; totalResponseTime: number; l1Category: L1Category }>();
-  
-  entries.forEach(entry => {
-    if (!emotionMap.has(entry.l2Emotion)) {
-      emotionMap.set(entry.l2Emotion, {
-        count: 0,
-        totalResponseTime: 0,
-        l1Category: entry.l1Category
-      });
+
+  entries.forEach((entry) => {
+    const emotion =
+      entry?.l2?.label ||
+      entry?.l2?.id ||
+      entry?.l2Emotion ||   // keep compatibility with mock
+      "Unknown";
+
+    const l1Category: L1Category = entry.l1Category || entry?.l1?.id || "high_energy_pleasant";
+    const responseTime = Number(entry.responseTime ?? entry.timeToSelectMs ?? 0);
+
+    if (!emotionMap.has(emotion)) {
+      emotionMap.set(emotion, { count: 0, totalResponseTime: 0, l1Category });
     }
-    
-    const data = emotionMap.get(entry.l2Emotion)!;
+
+    const data = emotionMap.get(emotion)!;
     data.count++;
-    data.totalResponseTime += entry.responseTime;
+    data.totalResponseTime += Number.isFinite(responseTime) ? responseTime : 0;
+    // keep the latest category (or you can keep first—either is fine)
+    data.l1Category = l1Category;
   });
-  
+
   return Array.from(emotionMap.entries())
     .map(([emotion, data]) => ({
       emotion,
       count: data.count,
       l1Category: data.l1Category,
-      avgResponseTime: Math.round(data.totalResponseTime / data.count)
+      avgResponseTime: data.count > 0 ? Math.round(data.totalResponseTime / data.count) : 0
     }))
     .sort((a, b) => b.count - a.count);
 }
+
 
 export function getMoodStats(entries: MoodEntry[]) {
   const l1Counts: Record<L1Category, number> = {
