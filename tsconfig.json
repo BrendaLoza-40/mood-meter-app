@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "exclude": [
+    "src/**",
+    "node_modules/**",
+    "server/**",
+    "src-DashboardMT/node_modules/**",
+    "srcMTapp/node_modules/**"
+  ],
+  "references": [
+    { "path": "./src-DashboardMT" },
+    { "path": "./srcMTapp" }
+  ]
+}
