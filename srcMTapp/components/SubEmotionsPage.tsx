@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { emotions, QuadrantId } from "../data/emotions";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useTranslation } from "../data/translations";
+import { useEmotionTranslation } from "../data/emotionTranslations";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeToggle } from "./ThemeToggle";
-import { submitMoodEntry, type MoodEntry } from "../services/api";
 
 interface SubEmotionsPageProps {
   quadrant: QuadrantId;
@@ -38,35 +39,61 @@ const quadrantConfig = {
   },
 };
 
-// Generate square puzzle piece clip paths with tabs and blanks
-const getPuzzlePieceClipPath = (index: number) => {
-  const puzzlePieces = [
-    // Top tab, right blank, bottom blank, left tab
-    "polygon(0% 0%, 35% 0%, 38% -8%, 42% -8%, 45% 0%, 100% 0%, 108% 35%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 62% 108%, 58% 108%, 55% 100%, 0% 100%, -8% 65%, -8% 58%, 0% 55%, 0% 0%)",
-    // Top blank, right tab, bottom tab, left blank
-    "polygon(0% 0%, 35% 0%, 35% -8%, 42% -8%, 42% 0%, 100% 0%, 100% 35%, 108% 38%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 62% 108%, 58% 108%, 55% 100%, 0% 100%, 0% 65%, -8% 62%, -8% 58%, 0% 55%, 0% 0%)",
-    // Top tab, right tab, bottom blank, left blank  
-    "polygon(0% 0%, 35% 0%, 38% -8%, 42% -8%, 45% 0%, 100% 0%, 100% 35%, 108% 38%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 65% 108%, 58% 108%, 58% 100%, 0% 100%, 0% 65%, -8% 65%, -8% 58%, 0% 58%, 0% 0%)",
-    // Top blank, right blank, bottom tab, left tab
-    "polygon(0% 0%, 35% 0%, 35% -8%, 42% -8%, 42% 0%, 100% 0%, 108% 35%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 62% 108%, 58% 108%, 55% 100%, 0% 100%, -8% 65%, -8% 58%, 0% 55%, 0% 0%)",
-    // All tabs
-    "polygon(0% 0%, 35% 0%, 38% -8%, 42% -8%, 45% 0%, 100% 0%, 100% 35%, 108% 38%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 62% 108%, 58% 108%, 55% 100%, 0% 100%, -8% 65%, -8% 58%, 0% 55%, 0% 0%)",
-    // All blanks
-    "polygon(0% 0%, 35% 0%, 35% -8%, 42% -8%, 42% 0%, 100% 0%, 108% 35%, 108% 42%, 100% 45%, 100% 100%, 65% 100%, 65% 108%, 58% 108%, 58% 100%, 0% 100%, 0% 65%, -8% 65%, -8% 58%, 0% 58%, 0% 0%)",
-  ];
-  return puzzlePieces[index % puzzlePieces.length];
-};
-
 export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotionsPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [hoveredEmotion, setHoveredEmotion] = useState<string | null>(null);
   const [clickedEmotion, setClickedEmotion] = useState<string | null>(null);
-  const [startTime] = useState(Date.now()); // Track when user entered this page
   const { getThemeColors } = useTheme();
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+  const emotionT = useEmotionTranslation(language);
   const colors = getThemeColors();
+  
+  const quadrantConfig = {
+    "high-pleasant": {
+      title: t.highEnergyPleasant.replace('\n', ' '),
+      gradient: "from-yellow-400 to-green-400",
+      buttonGradient: "from-yellow-400 to-green-500",
+      hoverGradient: "hover:from-yellow-500 hover:to-green-600",
+    },
+    "high-unpleasant": {
+      title: t.highEnergyUnpleasant.replace('\n', ' '),
+      gradient: "from-red-400 to-orange-400",
+      buttonGradient: "from-red-400 to-orange-500",
+      hoverGradient: "hover:from-red-500 hover:to-orange-600",
+    },
+    "low-pleasant": {
+      title: t.lowEnergyPleasant.replace('\n', ' '),
+      gradient: "from-green-400 to-blue-400",
+      buttonGradient: "from-green-400 to-blue-500",
+      hoverGradient: "hover:from-green-500 hover:to-blue-600",
+    },
+    "low-unpleasant": {
+      title: t.lowEnergyUnpleasant.replace('\n', ' '),
+      gradient: "from-blue-500 to-purple-500",
+      buttonGradient: "from-blue-500 to-purple-600",
+      hoverGradient: "hover:from-blue-600 hover:to-purple-700",
+    },
+  };
+  
   const config = quadrantConfig[quadrant];
   const emotionList = emotions[quadrant];
+
+  // Bubble animation state
+  const [pointerPos, setPointerPos] = useState({ x: -1000, y: -1000 });
+  const [animationTargets, setAnimationTargets] = useState<Record<string, { scale: number; opacity: number; brightness: number }>>({});
+  const animationFrameRef = useRef<number>();
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Animation parameters
+  const influenceRadius = 200; // pixels
+  const opacityMin = 1.0;
+  const opacityMax = 1.0;
+  const scaleMin = 1.0;
+  const scaleMax = 1.08;
+  const brightnessMin = 1.0;
+  const brightnessMax = 1.15;
 
   const handleEmotionClick = async (emotion: string) => {
     if (isSubmitting) return; // Protection against excess tapping
@@ -74,33 +101,6 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
     setClickedEmotion(emotion);
     setSelectedEmotion(emotion);
     setIsSubmitting(true);
-    
-    // Calculate time taken to select emotion
-    const timeToSelectMs = Date.now() - startTime;
-    
-    // Create mood entry object
-    const moodEntry: MoodEntry = {
-      id: `e_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      dateOnly: new Date().toISOString().slice(0, 10),
-      l1: {
-        id: quadrant,
-        label: config.title,
-      },
-      l2: {
-        id: `${quadrant}_${emotion.toLowerCase().replace(/\s+/g, '_')}`,
-        label: emotion,
-      },
-      timeToSelectMs,
-    };
-
-    // Submit to backend API
-    try {
-      await submitMoodEntry(moodEntry);
-      console.log('Mood submitted successfully');
-    } catch (error) {
-      console.error('Failed to submit mood, but saved locally as backup');
-    }
     
     // Brief delay to show click pulse animation
     setTimeout(() => {
@@ -114,127 +114,199 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
     }, 500);
   };
 
-  return (
-    <div className={`min-h-screen ${colors.background} px-4 py-6 transition-all duration-500`}>
-      <div className="fixed top-4 left-4 z-50">
-        <motion.button
-          onClick={onBack}
-          disabled={isSubmitting}
-          className={`flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-full px-6 py-4 shadow-lg ${colors.text} opacity-90 hover:opacity-100 transition-opacity disabled:opacity-50 font-bold text-2xl`}
-          whileHover={{ x: -3 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <svg className="w-10 h-10 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back
-        </motion.button>
-      </div>
-      <ThemeToggle />
+  // Track pointer position
+  useEffect(() => {
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      if (e instanceof MouseEvent) {
+        setPointerPos({ x: e.clientX, y: e.clientY });
+      } else if (e.touches.length > 0) {
+        setPointerPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+      }
+    };
 
-      <div className="w-full pt-20">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+    const handlePointerLeave = () => {
+      setPointerPos({ x: -1000, y: -1000 });
+    };
+
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('touchmove', handlePointerMove);
+    window.addEventListener('mouseleave', handlePointerLeave);
+    window.addEventListener('touchend', handlePointerLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('mouseleave', handlePointerLeave);
+      window.removeEventListener('touchend', handlePointerLeave);
+    };
+  }, []);
+
+  // Animation loop
+  useEffect(() => {
+    const animate = () => {
+      const newTargets: Record<string, { scale: number; opacity: number; brightness: number }> = {};
+
+      emotionList.forEach((emotion) => {
+        const button = buttonRefs.current[emotion];
+        if (!button) {
+          newTargets[emotion] = { scale: scaleMin, opacity: opacityMin, brightness: brightnessMin };
+          return;
+        }
+
+        const rect = button.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const dx = pointerPos.x - centerX;
+        const dy = pointerPos.y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < influenceRadius) {
+          const influence = 1 - distance / influenceRadius;
+          const scale = scaleMin + (scaleMax - scaleMin) * influence;
+          const opacity = opacityMin + (opacityMax - opacityMin) * influence;
+          const brightness = brightnessMin + (brightnessMax - brightnessMin) * influence;
+          newTargets[emotion] = { scale, opacity, brightness };
+        } else {
+          newTargets[emotion] = { scale: scaleMin, opacity: opacityMin, brightness: brightnessMin };
+        }
+      });
+
+      setAnimationTargets(newTargets);
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [emotionList, pointerPos, influenceRadius, opacityMin, opacityMax, scaleMin, scaleMax, brightnessMin, brightnessMax]);
+
+  // Initialize animation targets
+  useEffect(() => {
+    const initialTargets: Record<string, { scale: number; opacity: number; brightness: number }> = {};
+    emotionList.forEach((emotion) => {
+      initialTargets[emotion] = {
+        scale: scaleMin,
+        opacity: opacityMin,
+        brightness: brightnessMin,
+      };
+    });
+    setAnimationTargets(initialTargets);
+  }, [emotionList, scaleMin, opacityMin, brightnessMin]);
+
+  return (
+    <div className={`h-screen ${colors.background} flex flex-col transition-all duration-500 overflow-hidden p-0`}>
+      <div className="flex flex-col h-full max-w-full mx-auto w-full gap-0">
+        {/* Back Button - Absolute positioned overlay */}
+        <motion.div 
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0 }}
+          className="absolute top-2 left-2 z-20"
+        >
+          <button
+            onClick={onBack}
+            className={`${colors.text} opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1 text-xs bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t.back}
+          </button>
+        </motion.div>
+
+        {/* Header - Absolute positioned overlay */}
+        <motion.div 
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0 }}
+          className="absolute top-2 left-1/2 -translate-x-1/2 z-20"
         >
           <div className="text-center">
             <motion.div
-              initial={{ scale: 0 }}
+              initial={{ scale: 1 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className={`inline-block w-24 h-24 bg-gradient-to-br ${config.gradient} rounded-full mb-6`}
+              transition={{ duration: 0 }}
+              className={`inline-block w-5 h-5 bg-gradient-to-br ${config.gradient} rounded-full mb-0`}
             />
-            <h1 className={`${colors.text} text-8xl font-bold`}>{config.title}</h1>
-            <p className={`${colors.text} opacity-70 mt-4 text-5xl`}>
-              Select the specific emotion that matches how you feel
-            </p>
+            <h1 className={`${colors.text} text-xs mb-0 bg-black/20 backdrop-blur-sm px-3 py-0.5 rounded-full inline-block`}>{config.title}</h1>
           </div>
         </motion.div>
 
         <motion.div 
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-8"
+          transition={{ duration: 0 }}
+          className="h-full grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5 gap-2 md:gap-3 p-3 pt-14"
         >
           <AnimatePresence>
-            {emotionList.map((emotion, index) => {
-              const puzzleClipPath = getPuzzlePieceClipPath(index);
+            {emotionList.slice(0, 25).map((emotion, index) => {
               const isHovered = hoveredEmotion === emotion;
               const isClicked = clickedEmotion === emotion;
+              const animTarget = animationTargets[emotion] || { scale: 1, opacity: 1, brightness: 1 };
               
               return (
                 <motion.button
                   key={emotion}
+                  ref={(el: HTMLButtonElement | null) => {
+                    buttonRefs.current[emotion] = el;
+                  }}
                   onClick={() => handleEmotionClick(emotion)}
                   onMouseEnter={() => setHoveredEmotion(emotion)}
                   onMouseLeave={() => setHoveredEmotion(null)}
                   disabled={isSubmitting}
-                  initial={{ scale: 0, opacity: 0 }}
                   animate={{ 
-                    scale: isClicked ? 1.10 : (selectedEmotion === emotion ? 1.05 : (isHovered ? 1.05 : 1)), 
+                    scale: isClicked ? 1.10 : (selectedEmotion === emotion ? 1.05 : animTarget.scale), 
                     opacity: 1,
                     rotate: isHovered ? (index % 2 === 0 ? 2 : -2) : 0,
                   }}
                   exit={{ scale: 0, opacity: 0 }}
                   transition={{ 
-                    delay: index * 0.02,
                     scale: {
-                      duration: isClicked ? 0.3 : (isHovered ? 0.3 : 0.25),
-                      ease: isClicked ? "easeOut" : (isHovered ? [0.33, 1, 0.68, 1] : "easeIn"),
+                      duration: 0,
+                      ease: "linear",
                     },
                     rotate: {
-                      duration: 0.3,
-                      ease: [0.33, 1, 0.68, 1],
+                      duration: 0,
+                      ease: "linear",
                     },
                     opacity: {
-                      duration: 0.2,
+                      duration: 0,
+                      ease: "linear",
                     }
                   }}
-                  whileHover={{ y: -6 }}
                   whileTap={{ scale: 1.10 }}
                   className={`
                     relative bg-gradient-to-br ${config.buttonGradient}
-                    text-white py-4 px-3 transition-all rounded-[24px]
+                    text-white py-8 px-6 transition-all rounded-lg
                     disabled:opacity-50 disabled:cursor-not-allowed
-                    overflow-hidden font-bold flex items-center justify-center text-center
+                    overflow-visible h-full w-full flex items-center justify-center text-lg md:text-xl font-medium
                   `}
                   style={{
                     transformOrigin: "center center",
-                    clipPath: isHovered || isClicked ? puzzleClipPath : "none",
-                    minWidth: "200px",
-                    minHeight: "200px",
-                    fontSize: "clamp(1.2rem, 3.5vw, 2.5rem)",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    boxShadow: isHovered 
-                      ? "0 20px 40px rgba(0,0,0,0.2), inset 0 1px 3px rgba(0,0,0,0.1)" 
-                      : "0 10px 20px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.05)",
+                    filter: `brightness(${animTarget.brightness})`,
+                    boxShadow: animTarget.scale > 1.02
+                      ? "0 20px 40px rgba(0,0,0,0.2)" 
+                      : "0 10px 20px rgba(0,0,0,0.15)",
                   }}
                 >
-                  {/* Inner shadow for depth (default state) */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none rounded-[20px]"
-                    style={{
-                      boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
-                      clipPath: isHovered || isClicked ? puzzleClipPath : "none",
-                    }}
-                  />
                   
                   {/* Glow effect on hover - brightens */}
                   <motion.div
-                    className="absolute inset-0 bg-white rounded-[20px]"
+                    className="absolute inset-0 bg-white rounded-lg"
                     initial={{ opacity: 0 }}
                     animate={{ 
                       opacity: isHovered ? 0.2 : 0,
                     }}
                     transition={{ 
-                      duration: 0.3,
-                      ease: [0.33, 1, 0.68, 1]
+                      duration: 0,
+                      ease: "linear"
                     }}
                     style={{
-                      clipPath: isHovered ? puzzleClipPath : "none",
                       mixBlendMode: "overlay",
                     }}
                   />
@@ -243,17 +315,16 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
                   <AnimatePresence>
                     {isClicked && (
                       <motion.div
-                        className="absolute inset-0 rounded-[20px]"
+                        className="absolute inset-0 rounded-lg"
                         initial={{ scale: 0, opacity: 0.6 }}
                         animate={{ scale: 2, opacity: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ 
-                          duration: 0.4,
-                          ease: "easeOut"
+                          duration: 0,
+                          ease: "linear"
                         }}
                         style={{
                           background: "radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)",
-                          clipPath: puzzleClipPath,
                         }}
                       />
                     )}
@@ -261,26 +332,20 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
                   
                   {/* Color accent brightens on click */}
                   <motion.div
-                    className="absolute inset-0 bg-white rounded-[20px]"
+                    className="absolute inset-0 bg-white rounded-lg"
                     animate={{ 
                       opacity: isClicked ? 0.3 : 0,
                     }}
                     transition={{ 
-                      duration: 0.15,
-                    }}
-                    style={{
-                      clipPath: isClicked ? puzzleClipPath : "none",
+                      duration: 0,
                     }}
                   />
                   
                   {selectedEmotion === emotion && (
                     <motion.div
                       layoutId="selected-emotion"
-                      className="absolute inset-0 bg-white/20 rounded-[20px]"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      style={{
-                        clipPath: puzzleClipPath,
-                      }}
+                      className="absolute inset-0 bg-white/20 rounded-lg"
+                      transition={{ duration: 0 }}
                     />
                   )}
                   
@@ -291,33 +356,23 @@ export function SubEmotionsPage({ quadrant, onSelectEmotion, onBack }: SubEmotio
                       initial={{ scale: 0.9, opacity: 0.3 }}
                       animate={{ scale: 1.1, opacity: 0 }}
                       transition={{ 
-                        duration: 0.8, 
+                        duration: 0, 
                         repeat: Infinity,
-                        ease: "easeOut",
-                        repeatDelay: 0.2,
+                        ease: "linear",
+                        repeatDelay: 0,
                       }}
                       style={{
                         background: "radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%)",
-                        clipPath: puzzleClipPath,
                       }}
                     />
                   )}
                   
-                  <span className="relative block z-10">{emotion}</span>
+                  <span className="relative block z-10">{emotionT[emotion as keyof typeof emotionT]}</span>
                 </motion.button>
               );
             })}
           </AnimatePresence>
         </motion.div>
-
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className={`text-center mt-8 ${colors.text} opacity-60 text-5xl font-semibold`}
-        >
-          Take your time. There's no wrong answer.
-        </motion.p>
       </div>
     </div>
   );

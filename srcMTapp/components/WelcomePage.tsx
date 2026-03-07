@@ -1,36 +1,31 @@
 import { useState } from "react";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useTranslation } from "../data/translations";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeToggle } from "./ThemeToggle";
 
 interface WelcomePageProps {
   onGetStarted: () => void;
-  testingMode?: boolean;
-  onTestingModeChange?: (on: boolean) => void;
 }
 
-export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeChange }: WelcomePageProps) {
-  const { getThemeColors, theme } = useTheme();
-  const colors = getThemeColors();
-  const [isWinking, setIsWinking] = useState(false);
+export function WelcomePage({ onGetStarted }: WelcomePageProps) {
+  const { getThemeColors } = useTheme();
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+  const colors = getThemeColors() || {
+    background: 'bg-[#FFF5F0]',
+    primary: 'bg-[#FF8A65]',
+    secondary: 'bg-[#FFB74D]',
+    accent: 'bg-[#FFCCBC]',
+    text: 'text-[#4A3428]',
+    cardBg: 'bg-white/80',
+    gradient: 'from-[#FF8A65] via-[#FFB74D] to-[#FF8A65]',
+  };
   const [isExpanding, setIsExpanding] = useState(false);
 
-  // Arrow colors based on theme
-  const arrowColors = {
-    day: { start: '#FF8A65', end: '#FFB74D', text: 'text-white' },
-    dark: { start: '#4ade80', end: '#60a5fa', text: 'text-black' },
-    lightblue: { start: '#64B5F6', end: '#90CAF9', text: 'text-[#1565C0]' },
-    yellow: { start: '#FDD835', end: '#FFEB3B', text: 'text-[#F57F17]' },
-  };
-  const currentArrow = arrowColors[theme];
-
   const handleClick = () => {
-    setIsWinking(true);
-    
-    // Trigger expansion after wink
-    setTimeout(() => {
-      setIsExpanding(true);
-    }, 300);
+    // Trigger expansion
+    setIsExpanding(true);
     
     // Navigate to main screen
     setTimeout(() => {
@@ -39,9 +34,9 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
   };
 
   return (
-    <div className={`min-h-screen ${colors.background} flex flex-col justify-center items-center px-4 py-6 transition-all duration-500 relative overflow-hidden`}>
+    <div className={`h-screen ${colors.background} flex flex-col justify-center items-center p-4 transition-all duration-500 relative overflow-hidden`}>
       {/* Decorative geometric shapes */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none z-0">
         {/* SOLID GEOMETRIC SHAPES */}
         {/* Top-left: Solid rounded square */}
         <motion.div
@@ -121,6 +116,7 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
           }}
           transition={{ 
             opacity: { duration: 1, delay: 0.2 },
+            scale: { duration: 1, delay: 0.2 },
             x: { duration: 3500 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
             y: { duration: 3000 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
             rotate: { duration: 5500 / 1000, repeat: Infinity, ease: [0.37, 0, 0.63, 1] },
@@ -252,7 +248,7 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
             y: { 
               duration: 4000 / 1000,
               repeat: Infinity,
-              ease: [0.37, 0, 0.63, 1], // Ease In-Out Sine
+              ease: [0.37, 0, 0.63, 1],
             }
           }}
           className={`absolute -top-48 -left-48 w-[500px] h-[500px] bg-gradient-to-br ${colors.gradient} rounded-full blur-2xl`}
@@ -406,58 +402,43 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
         </motion.svg>
       </div>
       
-      <ThemeToggle />
-
-      {onTestingModeChange && (
-        <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30 flex items-center gap-2">
-          <label className={`text-sm font-medium ${colors.text} opacity-90`} htmlFor="demo-mode">
-            Demo mode
-          </label>
-          <button
-            id="demo-mode"
-            type="button"
-            role="switch"
-            aria-checked={testingMode}
-            onClick={() => onTestingModeChange(!testingMode)}
-            className={`relative w-11 h-6 rounded-full transition-colors ${testingMode ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"}`}
-          >
-            <span
-              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${testingMode ? "translate-x-5" : "translate-x-0"}`}
-            />
-          </button>
-        </div>
-      )}
-
       {/* Hourglass-shaped container */}
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-4xl z-10 flex flex-col h-full justify-center items-center py-4 md:py-8">
         {/* Top section of hourglass */}
         <motion.div 
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-8"
+          className="text-center mb-8 md:mb-12 px-6"
         >
           <motion.h1 
-            className={`${colors.text} text-5xl md:text-6xl mb-4`}
+            className={`${colors.text} ${
+              language === 'en' 
+                ? 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl' 
+                : language === 'es'
+                ? 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'
+                : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'
+            } leading-tight mx-auto font-bold`}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            Mood Meter
+            {language === 'es' ? (
+              <>
+                Medidor de Estado de<br />Ánimo
+              </>
+            ) : language === 'ru' ? (
+              <>
+                Измеритель<br />Настроения
+              </>
+            ) : (
+              t.moodMeter
+            )}
           </motion.h1>
-          
-          <motion.p 
-            className={`${colors.text} text-4xl md:text-5xl lg:text-6xl font-bold`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            Check in with yourself
-          </motion.p>
         </motion.div>
 
-        {/* Center - Wink Face (hourglass middle) */}
-        <div className="flex justify-center items-center my-12 relative">
+        {/* Center - Animated Face (hourglass middle) */}
+        <div className="flex justify-center items-center my-4 md:my-8 relative">
           {/* Ripple effects */}
           <AnimatePresence>
             {isExpanding && (
@@ -502,24 +483,30 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
             )}
           </AnimatePresence>
 
-          {/* Main Wink Face Button */}
+          {/* Main Face Button - BIGGER SIZE WITH FUN ANIMATIONS */}
           <motion.button
             onClick={handleClick}
-            disabled={isWinking}
-            className={`relative bg-gradient-to-br ${colors.gradient} rounded-full shadow-2xl flex items-center justify-center cursor-pointer z-10`}
-            style={{ width: '450px', height: '450px' }}
+            disabled={isExpanding}
+            className={`relative w-[22rem] h-[22rem] sm:w-[26rem] sm:h-[26rem] md:w-[30rem] md:h-[30rem] lg:w-[34rem] lg:h-[34rem] max-w-[90vmin] max-h-[90vmin] bg-gradient-to-br ${colors.gradient} rounded-full shadow-2xl flex items-center justify-center cursor-pointer z-10`}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ 
               scale: isExpanding ? 1.5 : 1, 
-              rotate: 0,
+              rotate: isExpanding ? 360 : 0,
               opacity: isExpanding ? 0 : 1,
+              y: isExpanding ? 0 : [0, -15, 0],
             }}
             transition={{ 
               type: "spring", 
               stiffness: 200, 
               damping: 15,
               delay: 0.4,
-              opacity: { duration: 0.3, delay: isExpanding ? 0.5 : 0 }
+              opacity: { duration: 0.3, delay: isExpanding ? 0.5 : 0 },
+              y: { 
+                duration: 3, 
+                repeat: Infinity, 
+                ease: "easeInOut",
+                repeatType: "loop"
+              }
             }}
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
@@ -536,91 +523,94 @@ export function WelcomePage({ onGetStarted, testingMode = false, onTestingModeCh
             <div className="relative">
               {/* Left Eye */}
               <motion.div
-                className="absolute top-0 left-0 w-10 h-10 bg-white rounded-full"
-                style={{ x: -30, y: -10 }}
-                animate={{ scaleY: isWinking ? 0.1 : 1 }}
-                transition={{ duration: 0.15, ease: "easeInOut" }}
+                className="absolute top-0 left-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-white rounded-full"
+                style={{ x: -60, y: -20 }}
               />
               
-              {/* Right Eye (winks) */}
+              {/* Right Eye */}
               <motion.div
-                className="absolute top-0 right-0 bg-white rounded-full"
-                style={{ x: 30, y: -10 }}
-                animate={{ 
-                  width: isWinking ? 40 : 40,
-                  height: isWinking ? 5 : 40,
-                  scaleY: isWinking ? 0.1 : 1,
-                }}
-                transition={{ duration: 0.15, ease: "easeInOut" }}
+                className="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-white rounded-full"
+                style={{ x: 60, y: -20 }}
               />
 
-              {/* Smile */}
-              <motion.svg
-                className="w-40 h-40 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                <motion.path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={5}
-                  d="M8 14s1.5 2 4 2 4-2 4-2"
-                  animate={{ 
-                    d: isWinking 
-                      ? "M7 14s2 3 5 3 5-3 5-3" 
-                      : "M8 14s1.5 2 4 2 4-2 4-2"
+              {/* Animated Mouth - Smile to Neutral to Frown with Fade */}
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64">
+                {/* Smile */}
+                <motion.svg
+                  className="absolute inset-0 w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  animate={{
+                    opacity: [1, 1, 0, 0, 0, 0, 0, 0, 1],
                   }}
-                  transition={{ duration: 0.15 }}
-                />
-              </motion.svg>
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "linear",
+                    times: [0, 0.30, 0.33, 0.63, 0.66, 0.96, 0.99, 0.999, 1]
+                  }}
+                >
+                  <motion.path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={4}
+                    d="M7 14s2 3 5 3 5-3 5-3"
+                  />
+                </motion.svg>
+
+                {/* Neutral */}
+                <motion.svg
+                  className="absolute inset-0 w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  animate={{
+                    opacity: [0, 0, 0, 1, 1, 0, 0, 0, 0],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "linear",
+                    times: [0, 0.30, 0.33, 0.36, 0.63, 0.66, 0.96, 0.99, 1]
+                  }}
+                >
+                  <motion.path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={4}
+                    d="M7 15h10"
+                  />
+                </motion.svg>
+
+                {/* Frown */}
+                <motion.svg
+                  className="absolute inset-0 w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  animate={{
+                    opacity: [0, 0, 0, 0, 0, 0, 1, 1, 0],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "linear",
+                    times: [0, 0.30, 0.33, 0.63, 0.66, 0.69, 0.72, 0.96, 0.99]
+                  }}
+                >
+                  <motion.path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={4}
+                    d="M7 17s2-3 5-3 5 3 5 3"
+                  />
+                </motion.svg>
+              </div>
             </div>
           </motion.button>
         </div>
       </div>
-
-      {/* Left side text with arrow - positioned absolutely relative to screen */}
-      <motion.div 
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="absolute left-4 md:left-8 lg:left-12 top-1/2 -translate-y-1/2 z-20"
-      >
-        {/* Super long fat arrow with text inside */}
-        <div className="relative">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
-            <svg 
-              className="w-[500px] h-32 md:w-[700px] md:h-44 lg:w-[900px] lg:h-56"
-              viewBox="0 0 600 150" 
-            >
-              <defs>
-                <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style={{ stopColor: currentArrow.start }} />
-                  <stop offset="100%" style={{ stopColor: currentArrow.end }} />
-                </linearGradient>
-              </defs>
-              <polygon points="0,35 500,35 500,0 600,75 500,150 500,115 0,115" fill="url(#arrowGradient)" />
-            </svg>
-          </motion.div>
-          
-          {/* Text positioned inside the arrow */}
-          <motion.p 
-            className={`absolute top-1/2 left-8 md:left-12 lg:left-16 -translate-y-1/2 text-2xl md:text-4xl lg:text-5xl font-bold leading-snug ${currentArrow.text}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-          >
-            let's explore your emotions
-          </motion.p>
-        </div>
-      </motion.div>
     </div>
   );
 }

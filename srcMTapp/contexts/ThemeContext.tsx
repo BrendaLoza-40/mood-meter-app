@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-export type ThemeType = 'day' | 'dark' | 'lightblue' | 'yellow';
+export type ThemeType = 'day' | 'dark' | 'lightblue' | 'nature';
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -48,14 +48,14 @@ const themeConfig: Record<ThemeType, ThemeColors> = {
     cardBg: 'bg-white/80',
     gradient: 'from-[#64B5F6] via-[#90CAF9] to-[#64B5F6]',
   },
-  yellow: {
-    background: 'bg-[#FFFDE7]',
-    primary: 'bg-[#FDD835]',
-    secondary: 'bg-[#FFEB3B]',
-    accent: 'bg-[#FFF59D]',
-    text: 'text-[#F57F17]',
+  nature: {
+    background: 'bg-[#F0F8F5]',
+    primary: 'bg-[#81C784]',
+    secondary: 'bg-[#AED581]',
+    accent: 'bg-[#E0F2E9]',
+    text: 'text-[#43A047]',
     cardBg: 'bg-white/80',
-    gradient: 'from-[#FDD835] via-[#FFEB3B] to-[#FDD835]',
+    gradient: 'from-[#81C784] via-[#AED581] to-[#81C784]',
   },
 };
 

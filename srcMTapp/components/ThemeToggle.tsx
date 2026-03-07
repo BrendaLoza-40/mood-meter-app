@@ -6,9 +6,9 @@ export function ThemeToggle() {
 
   const themes: { type: ThemeType; label: string; icon: string }[] = [
     { type: 'day', label: 'Day', icon: '🌞' },
-    { type: 'dark', label: 'Dark', icon: '🌙' },
+    { type: 'dark', label: 'Dark', icon: '🌑' },
     { type: 'lightblue', label: 'Calm', icon: '💧' },
-    { type: 'yellow', label: 'Bright', icon: '💛' },
+    { type: 'nature', label: 'Nature', icon: '🌿' },
   ];
 
   return (

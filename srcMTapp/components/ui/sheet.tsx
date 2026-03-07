@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
-import { XIcon } from "lucide-react";
+import { XIcon } from "lucide-react@0.487.0";
 
 import { cn } from "./utils";
 
@@ -137,4 +137,3 @@ export {
   SheetTitle,
   SheetDescription,
 };
-
