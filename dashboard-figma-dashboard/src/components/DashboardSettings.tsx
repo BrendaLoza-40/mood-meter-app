@@ -3,17 +3,19 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Settings2, Languages, MapPin } from 'lucide-react';
-import { AppConfig, loadConfig, getEnabledLanguages, getEnabledLocations } from '../utils/appConfig';
+import { Settings2, Languages, MapPin, HelpCircle } from 'lucide-react';
+import { AppConfig, loadConfig, getEnabledLanguages, getEnabledLocations, saveConfig } from '../utils/appConfig';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslation } from '../utils/dashboardTranslations';
+import { toast } from 'sonner';
 
 interface DashboardSettingsProps {
   onLanguageChange?: (languageCode: string) => void;
   onLocationChange?: (locationId: string | 'all') => void;
+  onStartTutorial?: () => void;
 }
 
-export function DashboardSettings({ onLanguageChange, onLocationChange }: DashboardSettingsProps) {
+export function DashboardSettings({ onLanguageChange, onLocationChange, onStartTutorial }: DashboardSettingsProps) {
   const [config, setConfig] = useState<AppConfig>(loadConfig());
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const { language } = useLanguage();
@@ -38,6 +40,14 @@ export function DashboardSettings({ onLanguageChange, onLocationChange }: Dashbo
   const handleLocationChange = (locationId: string) => {
     setSelectedLocation(locationId);
     onLocationChange?.(locationId);
+  };
+
+  const handleStartTutorial = () => {
+    const updatedConfig = { ...config, showTutorial: true };
+    setConfig(updatedConfig);
+    saveConfig(updatedConfig);
+    toast.success('Starting tutorial walkthrough...');
+    onStartTutorial?.();
   };
 
   return (
@@ -99,6 +109,26 @@ export function DashboardSettings({ onLanguageChange, onLocationChange }: Dashbo
             </Select>
             <p className="text-xs text-muted-foreground">
               Showing data from: {selectedLocation === 'all' ? t('allLocations') : enabledLocations.find(l => l.id === selectedLocation)?.name}
+            </p>
+          </div>
+
+          {/* Tutorial Option */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              Tutorial
+            </Label>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full"
+              onClick={handleStartTutorial}
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              Start Dashboard Tutorial
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Learn how to use the dashboard with a step-by-step guide
             </p>
           </div>
 

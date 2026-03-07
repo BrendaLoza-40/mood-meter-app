@@ -15,7 +15,8 @@ import { L2EmotionBreakdown } from './components/L2EmotionBreakdown';
 import { AdminSettings } from './components/AdminSettings';
 import { AdminLogin } from './components/AdminLogin';
 import { DashboardSettings } from './components/DashboardSettings';
-import { ThemePreferenceChart } from './components/ThemePreferenceChart';
+import { DashboardTutorial } from './components/DashboardTutorial';
+import { ReactionTimeChart } from './components/ThemePreferenceChart';
 import { LocationStats } from './components/LocationStats';
 import { 
   generateMockData, 
@@ -43,6 +44,7 @@ function DashboardContent() {
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   const { language, setLanguage } = useLanguage();
   const t = useTranslation(language);
@@ -161,6 +163,7 @@ function DashboardContent() {
             <DashboardSettings 
               onLanguageChange={handleLanguageChange}
               onLocationChange={handleLocationChange}
+              onStartTutorial={() => setShowTutorial(true)}
             />
             <ExportButtons data={moodData} stats={stats} />
             <div className="flex items-center space-x-2">
@@ -233,7 +236,7 @@ function DashboardContent() {
 
             {/* Analytics Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ThemePreferenceChart 
+              <ReactionTimeChart 
                 data={moodData}
               />
               <LocationStats data={moodData} />
@@ -280,6 +283,12 @@ function DashboardContent() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Tutorial Component */}
+      <DashboardTutorial 
+        open={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
     </div>
     </>
   );

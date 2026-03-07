@@ -44,6 +44,7 @@ export interface AppConfig {
   csvDataSources: CSVDataSource[];
   customEmotions: CustomEmotion[];
   defaultLanguage: string;
+  showTutorial: boolean;
 }
 
 // Default configuration
@@ -84,7 +85,8 @@ export const DEFAULT_CONFIG: AppConfig = {
   ],
   csvDataSources: [],
   customEmotions: [],
-  defaultLanguage: 'en'
+  defaultLanguage: 'en',
+  showTutorial: true
 };
 
 // Local storage key

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
-import { Settings, Plus, Trash2, Save, MapPin, Code2, Heart, LogOut, Upload } from 'lucide-react';
+import { Settings, Plus, Trash2, Save, MapPin, Code2, Heart, LogOut, Upload, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadConfig, saveConfig, type AppConfig, type Location, type APIConfiguration, type CustomEmotion, type CSVDataSource } from '../utils/appConfig';
 

@@ -21,8 +21,8 @@ interface AdminLoginProps {
  * To change credentials, update the values below:
  */
 const DEFAULT_ADMIN = {
-  username: 'Brandonisawesome',
-  password: 'Brandonisthebest67!'
+  username: 'admin123',
+  password: 'admin123!'
 };
 
 export function AdminLogin({ open, onOpenChange, onLoginSuccess }: AdminLoginProps) {
@@ -100,10 +100,10 @@ export function AdminLogin({ open, onOpenChange, onLoginSuccess }: AdminLoginPro
               Default credentials for demo:
             </p>
             <p className="text-sm mt-1">
-              <span className="font-medium">Username:</span> Brandonisawesome
+              <span className="font-medium">Username:</span> admin123
             </p>
             <p className="text-sm">
-              <span className="font-medium">Password:</span> Brandonisthebest67!
+              <span className="font-medium">Password:</span> admin123!
             </p>
           </div>
 

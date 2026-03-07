@@ -54,7 +54,9 @@ export const dashboardTranslations = {
     moodDistribution: 'Mood Distribution',
     moodTrends: 'Mood Trends',
     emotionBreakdown: 'Emotion Breakdown',
-    themePreferenceAnalytics: 'Theme Preference Analytics',
+    reactionTimeAnalytics: 'Reaction Time Analytics',
+    timeSpentChoosingEmotion: 'Time spent choosing emotion after title screen',
+    responseCount: 'Response Count',
     locationStats: 'Location Statistics',
     
     // Stats Cards
@@ -214,7 +216,9 @@ export const dashboardTranslations = {
     moodDistribution: 'Distribución del Estado de Ánimo',
     moodTrends: 'Tendencias del Estado de Ánimo',
     emotionBreakdown: 'Desglose de Emociones',
-    themePreferenceAnalytics: 'Análisis de Preferencias de Tema',
+    reactionTimeAnalytics: 'Análisis de Tiempo de Reacción',
+    timeSpentChoosingEmotion: 'Tiempo dedicado a elegir emoción después de la pantalla de título',
+    responseCount: 'Conteo de Respuestas',
     locationStats: 'Estadísticas de Ubicación',
     
     // Stats Cards
@@ -381,7 +385,9 @@ export const dashboardTranslations = {
     moodDistribution: 'Распределение Настроения',
     moodTrends: 'Тенденции Настроения',
     emotionBreakdown: 'Разбор Эмоций',
-    themePreferenceAnalytics: 'Аналитика Предпочтений Темы',
+    reactionTimeAnalytics: 'Аналитика Времени Реакции',
+    timeSpentChoosingEmotion: 'Время, потраченное на выбор эмоции после заглавного экрана',
+    responseCount: 'Количество Ответов',
     locationStats: 'Статистика Местоположения',
     
     // Stats Cards
